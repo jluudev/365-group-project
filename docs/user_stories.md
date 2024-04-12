@@ -20,8 +20,6 @@
 18. As a hero, I want to die after my health reaches 0, so that I am removed from the world.
 19. As a hero, I want to spend money to go on vacation, so that I can relax and enjoy my life.
 
-
-
 # Exceptions
 
 1. Exception: Guild does not have money to recruit more heroes.
@@ -44,5 +42,9 @@
 > - If a hero tries to use XP to level up past 100, then an error occurs and the hero is told that they are at the max level.
 10. Exception: Guild tries to send out a vacationing hero.
 > - If a guild attempts to send a hero out on a quest, but the hero is on vacation, the hero sends an error and will say “go away.”
-11. 
-12. 
+11. Exception: Dungeon attempts to spawn a monster, but the dungeon is at max capacity.
+> - If a dungeon attempts to spawn a monster but the dungeon is in full capacity then then the monster won’t spawn and the dungeon remains unchanged.
+12. Exception: Guild attempts to recruit a hero that is already a member of another guild.
+> - If a guild tries to recruit a hero who is already part of another guild, the hero declines and remains with their current guild.
+13. Exception: A party of heroes attempt to clear a dungeon when another party is already inside.
+> - If a party of heroes attempt to go inside a dungeon that is already fighting inside, then the party that is fighting tells them to go away, and they are not allowed inside
