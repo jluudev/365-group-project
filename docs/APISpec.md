@@ -54,6 +54,22 @@ Recruits a hero.
 
 ## 2. Dungeons:
 API calls are made in this sequence when it comes to fighting dungeons.
+### 2.1 Create Monster - `/dungeon/create_dungeon/` (POST)
+Create a monster.
+**Request**:
+```json
+[
+    {
+        "level" : "number",
+    }
+]
+```
+***Response***:
+```json
+{
+    "success": "boolean"
+}
+```
 
 
 
