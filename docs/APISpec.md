@@ -76,8 +76,6 @@ Creates a dungeon in the world. Errors if there is a dungeon with the same name.
 }
 ```
 
-
-
 ### 2.2 Create Monster - `/dungeon/create_monster/` (POST)
 Creates a monster within a dungeon.
 **Request**:
@@ -99,9 +97,11 @@ Creates a monster within a dungeon.
 API calls are made in this sequence when it comes to sending heroes out into dungeons.
 
 1. `Get Quests`
-2. `Send Party`
-3. `Collect Bounty`
-4. `Assess Damage`
+2. `Check Available Heroes`
+3. `Send Party`
+4. `Collect Bounty`
+5. `Assess Damage`
+6. `Remove Dead Heroes`
 
 ### 3.1 Get Quests - `/world/get_quests/` (GET)
 Shares all the available dungeons to be raided in the world
@@ -115,7 +115,21 @@ Shares all the available dungeons to be raided in the world
 ]
 ```
 
-### 3.2 Send Party - `/dungeon/send_party/` (POST)
+### 3.2 Check Available Heroes - `/guild/available_heroes/{guild_id}` (GET)
+Shares all available heroes in the guild
+***Response***:
+```json
+[
+    {
+        "hero_name": "string",
+        "level": "number",
+        "power": "number",
+        "age": "number",
+    }
+]
+```
+
+### 3.3 Send Party - `/dungeon/send_party/{dungeon_id}` (POST)
 Sends the party (list of heroes) to be sent to the dungeon. The party may be sent back if they do not meet the level requirements or their party size does not meet the dungeon size.
 **Request**:
 ```json
@@ -135,7 +149,7 @@ Sends the party (list of heroes) to be sent to the dungeon. The party may be sen
 }
 ```
 
-### 3.3 Collect Bounty - `/dungeon/collect_bounty/` (GET)
+### 3.4 Collect Bounty - `/dungeon/collect_bounty/{guild_id}` (POST)
 Collects the gold alloted for the guild from the dungeon raid
 ***Response***:
 ```json
@@ -144,7 +158,7 @@ Collects the gold alloted for the guild from the dungeon raid
 }
 ```
 
-### 3.4 Assess Damage - `/dungeon/assess_damage/` (GET)
+### 3.5 Assess Damage - `/dungeon/assess_damage/{dungeon_id}` (GET)
 Gets a list of heroes that died in action from the raid
 ***Response***:
 ```json
@@ -158,22 +172,37 @@ Gets a list of heroes that died in action from the raid
 ]
 ```
 
-## 4. Heroes in Dungeons
-API calls are made in this sequence when it comes to fighting dungeons.
+### 3.6 Remove Dead Heroes - `/guild/remove_heroes/{guild_id}` (POST)
+Removes dead heroes from the guild
+**Request**:
+```json
+[
+    {
+        "hero_id":"number"
+    }
+]
+```
+***Response***:
+```json
+{
+    "success": "boolean"
+}
+```
 
-## 5. Heroes
+## 4. Heroes
 API calls are made in this sequence for heroes in the world and outside dungeons. 
 
 1. `Create Hero`
 2. `Age Hero`
-3. `Raise Level`
+3. `Check XP`
+4. `Raise Level`
 
 If the heroes are not yet in a guild, they will call the below as well.
 
-4. `View Pending Requests`
-5. `Accept Request`
+5. `View Pending Requests`
+6. `Accept Request`
 
-### 5.1 Create Hero - `/world/create_hero/` (POST)
+### 4.1 Create Hero - `/world/create_hero/` (POST)
 **Request**:
 ```json
 [
@@ -191,34 +220,76 @@ If the heroes are not yet in a guild, they will call the below as well.
     "success": "boolean"
 }
 ```
-### 5.2 Age Hero - `/world/age_hero/{hero_id}` (POST)
+### 4.2 Age Hero - `/world/age_hero/{hero_id}` (POST)
 ***Response***:
 ```json
 {
     "success": "boolean"
 }
 ```
-### 5.3 Raise Level - `/hero/raise_level/{hero_id}` (POST)
+### 4.3 Check XP - `/hero/check_xp/{hero_id}` (POST)
+***Response***:
+```json
+{
+    "xp": "number"
+}
+```
+### 4.4 Raise Level - `/hero/raise_level/{hero_id}` (POST)
 ***Response***:
 ```json
 {
     "success": "boolean"
 }
 ```
-### 5.4 View Pending Requests - `/hero/view_pending_requests/{hero_id}` (GET)
+### 4.5 View Pending Requests - `/hero/view_pending_requests/{hero_id}` (GET)
 ***Response***:
 ```json
-{
-    [
+[
+    {
         "guild_name":"string",
         "rank":"number",
-        "gold":"number"
-    ]
-}
+        "gold":"number" 
+    }
+]
 ```
-### 5.5 Accept Request - `/world/accept_request/{guild_id}` (POST)
+### 4.6 Accept Request - `/world/accept_request/{guild_id}` (POST)
 ```json
 {
     "success": "boolean"
 }
 ```
+
+## 5. Heroes in Dungeons
+API calls are made in this sequence when it comes to fighting dungeons.
+
+1. `Find Monsters`
+2. `Attack Monster`
+
+Heroes may periodically check their health and choose to run away
+
+3. `Check Health`
+4. `Run Away`
+
+This may occur if a hero runs out of health.
+
+5. `Die`
+
+### 5.1
+### 5.2
+### 5.3
+### 5.4
+### 5.5
+
+## 6. Monsters
+API calls are made in this sequence when it comes to monsters attacking heroes.
+
+1. `Find Heroes`
+2. `Attack Hero`
+
+This can occur if a monster is killed by a hero.
+
+3. `Die`
+
+### 6.1
+### 6.2
+### 6.3
