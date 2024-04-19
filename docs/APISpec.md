@@ -274,11 +274,53 @@ This may occur if a hero runs out of health.
 
 5. `Die`
 
-### 5.1
-### 5.2
-### 5.3
-### 5.4
-### 5.5
+### 5.1 Find Monsters - `/dungeon/find_monsters/{dungeon_id}/` (GET)
+**Response**:
+```json
+[
+    {
+        "id":"number",
+        "name" : "string",
+        "level": "number",
+        "power": "number",
+    }
+]
+```
+### 5.2 Attack Monster - `/hero/attack_monster/{hero_id}/` (POST)
+**Request**:
+```json
+{
+    "monster_id":"number",
+}
+```
+**Response**:
+```json
+{
+    "success": "boolean"
+}
+```
+
+### 5.3 Check Health - `/hero/check_health/{hero_id}/` (GET)
+**Response**:
+```json
+{
+    "health": "number"
+}
+```
+### 5.4 Run Away - `/hero/run_away/{hero_id}/` (POST)
+**Response**:
+```json
+{
+    "success": "boolean"
+}
+```
+### 5.5 Die - `/hero/die/{hero_id}/` (POST)
+**Response**:
+```json
+{
+    "success": "boolean"
+}
+```
 
 ## 6. Monsters
 API calls are made in this sequence when it comes to monsters attacking heroes.
@@ -290,6 +332,34 @@ This can occur if a monster is killed by a hero.
 
 3. `Die`
 
-### 6.1
-### 6.2
-### 6.3
+### 6.1 Find Heroes - `/monster/find_heroes/{dungeon_id}/` (GET)
+**Response**:
+```json
+[
+    {
+        "id":"number",
+        "name" : "string",
+        "level": "number",
+        "power": "number",
+    }
+]
+```
+### 6.2 Attack Hero - `/monster/attack_hero/{monster_id}/`
+**Request**:
+```json
+{
+    "hero_id":"number",
+}
+```
+**Response**:
+```json
+{
+    "success": "boolean"
+}
+```
+### 6.3 Die - `/monster/die/{monster_id}`
+```json
+{
+    "success": "boolean"
+}
+```
