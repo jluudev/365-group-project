@@ -7,7 +7,7 @@ The API calls are made in this sequence when creating a guild and recruiting som
 2. `View Heroes`
 3. `Recruit Hero`
 
-### 1.1 Create Guild - `/guild/create_guild/` (POST)
+### 1.1 Create Guild - `/world/create_guild/` (POST)
 Creates a guild in the world. The guild may be denied from being created if there is some details match another existing guild.
 **Request**:
 ```json
@@ -63,7 +63,7 @@ Creates a dungeon in the world. Errors if there is a dungeon with the same name.
 [
     {
         "dungeon_name": "string",
-        “dungeon_size”: “number”,
+        "dungeon_size": "number",
         "dungeon_level": "number",
         "reward": "number",
     }
@@ -161,3 +161,64 @@ Gets a list of heroes that died in action from the raid
 ## 4. Heroes in Dungeons
 API calls are made in this sequence when it comes to fighting dungeons.
 
+## 5. Heroes
+API calls are made in this sequence for heroes in the world and outside dungeons. 
+
+1. `Create Hero`
+2. `Age Hero`
+3. `Raise Level`
+
+If the heroes are not yet in a guild, they will call the below as well.
+
+4. `View Pending Requests`
+5. `Accept Request`
+
+### 5.1 Create Hero - `/world/create_hero/` (POST)
+**Request**:
+```json
+[
+    {
+        "name" : "string",
+        "class": "string",
+        "level": "number",
+        "age": "number",
+    }
+]
+```
+***Response***:
+```json
+{
+    "success": "boolean"
+}
+```
+### 5.2 Age Hero - `/world/age_hero/{hero_id}` (POST)
+***Response***:
+```json
+{
+    "success": "boolean"
+}
+```
+### 5.3 Raise Level - `/hero/raise_level/{hero_id}` (POST)
+***Response***:
+```json
+{
+    "success": "boolean"
+}
+```
+### 5.4 View Pending Requests - `/hero/view_pending_requests/{hero_id}` (GET)
+***Response***:
+```json
+{
+    [
+        "guild_name":"string",
+        "rank":"number",
+        "gold":"number"
+    ]
+}
+```
+### 5.5 Accept Request - `/world/accept_request/{guild_id}` (POST)
+```json
+{
+    "success": "boolean"
+}
+```

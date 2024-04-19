@@ -7,7 +7,7 @@ Mages Only then makes a request to Elminster the Sage.
 
 To do so:
 - Mages Only then sends a request to Elminster the Sage by calling `POST /guild/recruit_hero/{hero_id}/`
-- Elminster the Sage calls `GET /hero/view_pending_requests/` one day because he is not in a guild. He sees the request from Mages Only.
+- Elminster the Sage calls `GET /hero/view_pending_requests/{hero_id}` one day because he is not in a guild. He sees the request from Mages Only.
 - Elminster the Sage then has the option to accept by calling `POST /hero/accept_request/{guild_id}/`
 
 Elminster the Sage accepts Mages Only and now he can join them in the dungeons.
