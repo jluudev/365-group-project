@@ -11,12 +11,14 @@ router = APIRouter(
 
 # Endpoint
 # Recruit Hero - /guild/recruit_hero/{hero_id}/ (POST)
+@router.post("/recruit_hero/{hero_id}")
 def recruit_hero(hero_id: int):
     return {
         "success": "boolean"
     }
 
 # Check Available Heroes - /guild/available_heroes/{guild_id} (GET)
+@router.get("/available_heroes/{guild_id}")
 def available_heroes(guild_id: int):
     return [
         {
