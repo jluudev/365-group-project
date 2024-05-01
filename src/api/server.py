@@ -6,6 +6,8 @@ import logging
 import sys
 from starlette.middleware.cors import CORSMiddleware
 
+from src.api import dungeon, hero, monster, world
+
 description = """
 Some description.
 """
@@ -20,6 +22,12 @@ app = FastAPI(
         "email": "jluu27@calpoly.edu",
     },
 )
+
+app.include_router(world.router)
+app.include_router(dungeon.router)
+app.include_router(hero.router)
+app.include_router(monster.router)
+
 
 @app.exception_handler(exceptions.RequestValidationError)
 @app.exception_handler(ValidationError)
