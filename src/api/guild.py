@@ -9,3 +9,20 @@ router = APIRouter(
     dependencies=[Depends(auth.get_api_key)],
 )
 
+# Endpoint
+# Recruit Hero - /guild/recruit_hero/{hero_id}/ (POST)
+def recruit_hero(hero_id: int):
+    return {
+        "success": "boolean"
+    }
+
+# Check Available Heroes - /guild/available_heroes/{guild_id} (GET)
+def available_heroes(guild_id: int):
+    return [
+        {
+            "hero_name": "string",
+            "level": "number",
+            "power": "number",
+            "age": "number",
+        }
+    ]
