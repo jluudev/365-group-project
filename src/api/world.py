@@ -4,7 +4,7 @@ from pydantic import BaseModel
 from src.api import auth
 
 router = APIRouter(
-    prefix="/dungeon",
-    tags=["dungeon"],
+    prefix="/world",
+    tags=["world"],
     dependencies=[Depends(auth.get_api_key)],
 )
