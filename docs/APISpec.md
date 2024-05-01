@@ -382,7 +382,8 @@ This can occur if a monster is killed by a hero.
     }
 ]
 ```
-### 6.2 Attack Hero - `/monster/attack_hero/{monster_id}/`
+
+### 6.2 Attack Hero - `/monster/attack_hero/{monster_id}/` (POST)
 
 **Request**:
 ```json
@@ -398,9 +399,11 @@ This can occur if a monster is killed by a hero.
     "success": "boolean"
 }
 ```
-### 6.3 Die - `/monster/die/{monster_id}`
+
+### 6.3 Die - `/monster/die/{monster_id}` (GET)
 
 **Response**:
+
 ```json
 {
     "success": "boolean"
