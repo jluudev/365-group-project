@@ -17,18 +17,21 @@ class Guild(BaseModel):
 # Endpoints
 
 # Create Guild - /world/create_guild/ (POST)
+@router.post("/create_guild")
 def create_guild(guild: Guild):
     return {
         "success": True
     }
 
 # View Heroes - /world/view_heroes/ (GET)
+@router.get("/view_heroes")
 def view_heroes():
     return {
         "success": True
     }
 
 # Get Quests - /world/get_quests/ (GET)
+@router.get("/get_quests")
 def get_quests():
     return [
             {
@@ -38,12 +41,14 @@ def get_quests():
         ]
 
 # Create Hero - /world/create_hero/ (POST)
+@router.post("/create_hero")
 def create_hero():
     return {
         "success": True
     }
 
 # Age Hero - /world/age_hero/{hero_id} (POST)
+@router.post("/age_hero/{hero_id}")
 def age_hero(hero_id: int):
     return {
         "success": True

@@ -19,30 +19,35 @@ class Dungeon(BaseModel):
     monster_capacity: int
 
 # Create Dungeon - /dungeon/create_dungeon/ (POST)
+@router.post("/create_dungeon")
 def create_dungeon(dungeon: Dungeon):
     return {
         "success": "boolean"
     }
 
 # Create Monster - /dungeon/create_monster/ (POST)
+@router.post("/create_monster")
 def create_monster():
     return {
         "success": "boolean"
     }
 
 # Send Party - /dungeon/send_party/{dungeon_id} (POST)
+@router.post("/send_party/{dungeon_id}")
 def send_party(dungeon_id: int):
     return {
         "success": "boolean"
     }
 
 # Collect Bounty - /dungeon/collect_bounty/{guild_id} (POST)
+@router.post("/collect_bounty/{guild_id}")
 def collect_bounty(guild_id: int):
     return {
         "gold": "number"
     }
 
 # Assess Damage - /dungeon/assess_damage/{dungeon_id} (GET)
+@router.get("/assess_damage/{dungeon_id}")
 def assess_damage(dungeon_id: int):
     return [
         {
@@ -54,6 +59,7 @@ def assess_damage(dungeon_id: int):
     ]
 
 # Find Monsters - /dungeon/find_monsters/{dungeon_id}/ (GET)
+@router.get("/find_monsters/{dungeon_id}")
 def find_monsters(dungeon_id: int):
     return [
         {
