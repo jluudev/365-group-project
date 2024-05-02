@@ -10,11 +10,6 @@ router = APIRouter(
 )
 
 # Model
-class Guild(BaseModel):
-    guild_name: str
-    max_capacity: int
-    gold: int
-
 class Hero(BaseModel):
     hero_name: str
     classType: str
@@ -23,22 +18,14 @@ class Hero(BaseModel):
 
 
 # Endpoints
-
-# Create Guild - /world/create_guild/ (POST)
-@router.post("/create_guild/{world_id}")
-def create_guild(guild: Guild):
-    return {
-        "success": True
-    }
-
-# View Heroes - /world/view_heroes/ (GET)
+# View Heroes - /world/view_heroes/{world_id} (GET)
 @router.get("/view_heroes/{world_id}")
 def view_heroes():
     return {
         "success": True
     }
 
-# Get Quests - /world/get_quests/ (GET)
+# Get Quests - /world/get_quests/{world_id} (GET)
 @router.get("/get_quests/{world_id}")
 def get_quests():
     return [
@@ -48,8 +35,8 @@ def get_quests():
             }
         ]
 
-# Create Hero - /world/create_hero/ (POST)
-@router.post("/create_hero")
+# Create Hero - /world/create_hero/{world_id} (POST)
+@router.post("/create_hero/{world_id}")
 def create_hero(hero: Hero):
     return {
         "success": True
