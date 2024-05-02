@@ -13,28 +13,28 @@ router = APIRouter(
 
 # Models
 class Dungeon(BaseModel):
-    name: str
-    level: int
+    dungeon_name: str
+    dungeon_level: int
     player_capacity: int
     monster_capacity: int
+    reward: int
 
-# Create Dungeon - /dungeon/create_dungeon/ (POST)
+class Monster(BaseModel):
+    type: str
+
+class Hero(BaseModel):
+    hero_name: str
+
+# Create Dungeon - /dungeon/create_dungeon/{world_id} (POST)
 @router.post("/create_dungeon")
 def create_dungeon(dungeon: Dungeon):
     return {
         "success": "boolean"
     }
 
-# Create Monster - /dungeon/create_monster/ (POST)
-@router.post("/create_monster")
-def create_monster():
-    return {
-        "success": "boolean"
-    }
-
-# Send Party - /dungeon/send_party/{dungeon_id} (POST)
-@router.post("/send_party/{dungeon_id}")
-def send_party(dungeon_id: int):
+# Create Monster - /dungeon/create_monster/{dungeon_id} (POST)
+@router.post("/create_monster/{dungeon_id}")
+def create_monster(monsters: list[Monster]):
     return {
         "success": "boolean"
     }
@@ -55,17 +55,5 @@ def assess_damage(dungeon_id: int):
             "level": "number",
             "power": "number",
             "age": "number",
-        }
-    ]
-
-# Find Monsters - /dungeon/find_monsters/{dungeon_id}/ (GET)
-@router.get("/find_monsters/{dungeon_id}")
-def find_monsters(dungeon_id: int):
-    return [
-        {
-            "id":"number",
-            "name" : "string",
-            "level": "number",
-            "power": "number",
         }
     ]
