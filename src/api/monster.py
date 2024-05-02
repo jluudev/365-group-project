@@ -15,7 +15,7 @@ router = APIRouter(
 
 # Find Heroes - /monster/find_heroes/{dungeon_id}/ (GET)
 @router.get("/find_heroes/{dungeon_id}")
-def find_heroes(dungeon_id: int):
+def find_heroes():
     return [
         {
             "id":"number",
@@ -27,14 +27,14 @@ def find_heroes(dungeon_id: int):
 
 # Attack Hero - /monster/attack_hero/{monster_id}/ (POST)
 @router.post("/attack_hero/{monster_id}")
-def attack_hero(monster_id: int):
+def attack_hero(hero_id: int):
     return {
         "success": "boolean"
     }
 
 # Die - /monster/die/{monster_id} (GET)
 @router.get("/die/{monster_id}")
-def die(monster_id: int):
+def die():
     return {
         "success": "boolean"
     }

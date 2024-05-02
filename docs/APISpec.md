@@ -7,14 +7,13 @@ The API calls are made in this sequence when creating a guild and recruiting som
 2. `View Heroes`
 3. `Recruit Hero`
 
-### 1.1 Create Guild - `/world/create_guild/` (POST)
+### 1.1 Create Guild - `/guild/create_guild/{world_id}` (POST)
 Creates a guild in the world. The guild may be denied from being created if there is some details match another existing guild.
 
 **Request**:
 ```json
 [
     {
-        "rank" : "number",
         "guild_name": "string",
         "max_capacity": "number",
         "gold": "number",
@@ -29,7 +28,7 @@ Creates a guild in the world. The guild may be denied from being created if ther
 }
 ```
 
-### 1.2 View Heroes - `/world/view_heroes/` (GET)
+### 1.2 View Heroes - `/world/view_heroes/{world_id}` (GET)
 Shares all the available heroes in the world.
 
 **Response**:
@@ -45,8 +44,15 @@ Shares all the available heroes in the world.
 ]
 ```
 
-### 1.3 Recruit Hero - `/guild/recruit_hero/{hero_id}/` (POST)
+### 1.3 Recruit Hero - `/guild/recruit_hero/{guild_id}` (POST)
 Recruits a hero.
+
+***Request***:
+```json
+{
+    "hero_name" : "string"
+}
+```
 
 ***Response***:
 ```json
@@ -60,7 +66,7 @@ API calls are made in this sequence when creating a dungeon.
 1. `Create Dungeon`
 2. `Create Monster`
 
-### 2.1 Create Dungeon - `/dungeon/create_dungeon/` (POST)
+### 2.1 Create Dungeon - `/dungeon/create_dungeon/{world_id}` (POST)
 Creates a dungeon in the world. Errors if there is a dungeon with the same name.
 
 **Request**:
@@ -68,7 +74,8 @@ Creates a dungeon in the world. Errors if there is a dungeon with the same name.
 [
     {
         "dungeon_name": "string",
-        "dungeon_size": "number",
+        "player_capacity": "number",
+        "monster_capacity":"number",
         "dungeon_level": "number",
         "reward": "number",
     }
@@ -82,14 +89,14 @@ Creates a dungeon in the world. Errors if there is a dungeon with the same name.
 }
 ```
 
-### 2.2 Create Monster - `/dungeon/create_monster/` (POST)
+### 2.2 Create Monster - `/dungeon/create_monster/{dungeon_id}` (POST)
 Creates a monster within a dungeon.
 
 **Request**:
 ```json
 [
     {
-        "level" : "number",
+        "type" : "string",
     }
 ]
 ```
@@ -111,7 +118,7 @@ API calls are made in this sequence when it comes to sending heroes out into dun
 5. `Assess Damage`
 6. `Remove Dead Heroes`
 
-### 3.1 Get Quests - `/world/get_quests/` (GET)
+### 3.1 Get Quests - `/world/get_quests/{world_id}` (GET)
 Shares all the available dungeons to be raided in the world
 
 **Response**:
@@ -140,19 +147,18 @@ Shares all available heroes in the guild
 ]
 ```
 
-### 3.3 Send Party - `/dungeon/send_party/{dungeon_id}` (POST)
+### 3.3 Send Party - `/guild/send_party/{guild_id}` (POST)
 Sends the party (list of heroes) to be sent to the dungeon. The party may be sent back if they do not meet the level requirements or their party size does not meet the dungeon size.
 
 **Request**:
 ```json
 [
     {
-        "hero_name": "string",
-        "level": "number",
-        "power": "number",
-        "age": "number",
+        "hero_name": "string"
     }
 ]
+
+"dungeon_name": "string"
 ```
 ***Response***:
 
@@ -197,7 +203,7 @@ Removes dead heroes from the guild
 ```json
 [
     {
-        "hero_id":"number"
+        "hero_name":"string"
     }
 ]
 ```
@@ -281,8 +287,14 @@ If the heroes are not yet in a guild, they will call the below as well.
     }
 ]
 ```
-### 4.6 Accept Request - /hero/accept_request/{hero_id}/{guild_id} (POST)
+### 4.6 Accept Request - /hero/accept_request/{hero_id}/ (POST)
 
+***Request***:
+```json
+{
+    "guild_name": "string"
+}
+```
 ***Response***:
 ```json
 {
@@ -305,7 +317,7 @@ This may occur if a hero runs out of health.
 
 5. `Die`
 
-### 5.1 Find Monsters - `/dungeon/find_monsters/{dungeon_id}/` (GET)
+### 5.1 Find Monsters - `/hero/find_monsters/{dungeon_id}/` (GET)
 
 **Response**:
 ```json
