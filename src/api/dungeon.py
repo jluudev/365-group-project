@@ -41,7 +41,7 @@ def create_monster(monsters: list[Monster]):
 
 # Collect Bounty - /dungeon/collect_bounty/{guild_id} (POST)
 @router.post("/collect_bounty/{guild_id}")
-def collect_bounty(guild_id: int):
+def collect_bounty():
     return {
         "gold": "number"
     }
