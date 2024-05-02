@@ -48,7 +48,7 @@ def collect_bounty():
 
 # Assess Damage - /dungeon/assess_damage/{dungeon_id} (GET)
 @router.get("/assess_damage/{dungeon_id}")
-def assess_damage(dungeon_id: int):
+def assess_damage():
     return [
         {
             "hero_name": "string",
