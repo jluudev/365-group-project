@@ -34,21 +34,21 @@ def create_dungeon(dungeon: Dungeon):
 
 # Create Monster - /dungeon/create_monster/{dungeon_id} (POST)
 @router.post("/create_monster/{dungeon_id}")
-def create_monster(monsters: list[Monster]):
+def create_monster(monsters: Monster):
     return {
         "success": "boolean"
     }
 
 # Collect Bounty - /dungeon/collect_bounty/{guild_id} (POST)
 @router.post("/collect_bounty/{guild_id}")
-def collect_bounty(guild_id: int):
+def collect_bounty():
     return {
         "gold": "number"
     }
 
 # Assess Damage - /dungeon/assess_damage/{dungeon_id} (GET)
 @router.get("/assess_damage/{dungeon_id}")
-def assess_damage(dungeon_id: int):
+def assess_damage():
     return [
         {
             "hero_name": "string",
