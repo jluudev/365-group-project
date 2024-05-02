@@ -26,7 +26,7 @@ class Hero(BaseModel):
     hero_name: str
 
 # Create Dungeon - /dungeon/create_dungeon/{world_id} (POST)
-@router.post("/create_dungeon")
+@router.post("/create_dungeon/{world_id}")
 def create_dungeon(dungeon: Dungeon):
     return {
         "success": "boolean"
