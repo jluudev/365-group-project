@@ -229,7 +229,7 @@ If the heroes are not yet in a guild, they will call the below as well.
 5. `View Pending Requests`
 6. `Accept Request`
 
-### 4.1 Create Hero - `/world/create_hero/` (POST)
+### 4.1 Create Hero - `/world/create_hero/{world_id}` (POST)
 
 **Request**:
 
