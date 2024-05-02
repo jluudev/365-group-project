@@ -34,7 +34,7 @@ def create_dungeon(dungeon: Dungeon):
 
 # Create Monster - /dungeon/create_monster/{dungeon_id} (POST)
 @router.post("/create_monster/{dungeon_id}")
-def create_monster(monsters: list[Monster]):
+def create_monster(monsters: Monster):
     return {
         "success": "boolean"
     }
