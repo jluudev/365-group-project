@@ -1,2 +1,8 @@
 .env
 .venv
+.vercel
+venv
+.idea
+__pycache__
+/.env
+info.log

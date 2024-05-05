@@ -1,7 +1,10 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from enum import Enum
 from pydantic import BaseModel
 from src.api import auth
+
+import sqlalchemy
+from src import database as db
 
 router = APIRouter(
     prefix="/guild",
@@ -22,21 +25,41 @@ class Guild(BaseModel):
 
 # Create Guild - /world/create_guild/{world_id} (POST)
 @router.post("/create_guild/{world_id}")
-def create_guild(guild: Guild):
+def create_guild(world_id: int, guild: Guild):
     return {
         "success": True
     }
 
 # Recruit Hero - /guild/recruit_hero/{guild_id} (POST)
 @router.post("/recruit_hero/{guild_id}")
-def recruit_hero(hero: Hero):
-    return {
-        "success": "boolean"
-    }
+def recruit_hero(guild_id: int, hero: Hero):
+    sql_to_check = sqlalchemy.text("""
+    SELECT id, guild_id FROM hero WHERE name = :hero_name;
+    """)
+    
+    sql_to_insert = sqlalchemy.text("""
+    INSERT INTO recruitment (hero_id, guild_id, status, request_date)
+    SELECT id, :guild_id, 'pending', now() FROM hero WHERE name = :hero_name AND guild_id IS NULL;
+    """)
+
+    with db.engine.begin() as connection:
+        hero_result = connection.execute(sql_to_check, {'hero_name': hero.hero_name}).fetchone()
+        
+        if hero_result is None:
+            return {"success": False, "message": "Hero not found"}
+
+        if hero_result.guild_id is not None:
+            return {"success": False, "message": "Hero is already in a guild"}
+
+        insert_result = connection.execute(sql_to_insert, {'hero_name': hero.hero_name, 'guild_id': guild_id})
+        if insert_result.rowcount > 0:
+            return {"success": True}
+        else:
+            return {"success": False, "message": "Failed to create recruitment"}
 
 # Check Available Heroes - /guild/available_heroes/{guild_id} (GET)
 @router.get("/available_heroes/{guild_id}")
-def available_heroes():
+def available_heroes(guild_id: int):
     return [
         {
             "hero_name": "string",
@@ -48,14 +71,14 @@ def available_heroes():
 
 # Remove Dead Heroes - /guild/remove_heroes/{guild_id} (POST)
 @router.post("/remove_heroes/{guild_id}")
-def remove_heroes(heroes: list[Hero]):
+def remove_heroes(guild_id: int, heroes: list[Hero]):
     return {
         "success": "boolean"
     }
 
 # Send Party - /guild/send_party/{guild_id} (POST)
-@router.post("/send_party")
-def send_party(party: list[Hero], dungeon_name: str):
+@router.post("/send_party/{guild_id}")
+def send_party(guild_id: int, party: list[Hero], dungeon_name: str):
     return {
         "success": "boolean"
     }

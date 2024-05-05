@@ -6,7 +6,7 @@ import logging
 import sys
 from starlette.middleware.cors import CORSMiddleware
 
-from src.api import dungeon, hero, monster, world
+from src.api import dungeon, hero, monster, world, guild
 
 description = """
 Some description.
@@ -27,6 +27,7 @@ app.include_router(world.router)
 app.include_router(dungeon.router)
 app.include_router(hero.router)
 app.include_router(monster.router)
+app.include_router(guild.router)
 
 
 @app.exception_handler(exceptions.RequestValidationError)
