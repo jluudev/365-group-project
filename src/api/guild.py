@@ -33,29 +33,19 @@ def create_guild(world_id: int, guild: Guild):
 # Recruit Hero - /guild/recruit_hero/{guild_id} (POST)
 @router.post("/recruit_hero/{guild_id}")
 def recruit_hero(guild_id: int, hero: Hero):
-    sql_to_check = sqlalchemy.text("""
-    SELECT id, guild_id FROM hero WHERE name = :hero_name;
-    """)
-    
-    sql_to_insert = sqlalchemy.text("""
+    sql_to_execute = sqlalchemy.text("""
     INSERT INTO recruitment (hero_id, guild_id, status, request_date)
-    SELECT id, :guild_id, 'pending', now() FROM hero WHERE name = :hero_name AND guild_id IS NULL;
+    SELECT id, :guild_id, 'pending', now() 
+    FROM hero 
+    WHERE name = :hero_name AND guild_id IS NULL;
     """)
 
     with db.engine.begin() as connection:
-        hero_result = connection.execute(sql_to_check, {'hero_name': hero.hero_name}).fetchone()
-        
-        if hero_result is None:
-            return {"success": False, "message": "Hero not found"}
-
-        if hero_result.guild_id is not None:
-            return {"success": False, "message": "Hero is already in a guild"}
-
-        insert_result = connection.execute(sql_to_insert, {'hero_name': hero.hero_name, 'guild_id': guild_id})
-        if insert_result.rowcount > 0:
+        result = connection.execute(sql_to_execute, {'hero_name': hero.hero_name, 'guild_id': guild_id})
+        if result.rowcount > 0:
             return {"success": True}
         else:
-            return {"success": False, "message": "Failed to create recruitment"}
+            return {"success": False, "message": "Hero not found or already in a guild"}
 
 # Check Available Heroes - /guild/available_heroes/{guild_id} (GET)
 @router.get("/available_heroes/{guild_id}")
