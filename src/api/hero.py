@@ -3,6 +3,9 @@ from enum import Enum
 from pydantic import BaseModel
 from src.api import auth
 
+import sqlalchemy
+from src import database as db
+
 router = APIRouter(
     prefix="/hero",
     tags=["hero"],
@@ -29,14 +32,22 @@ def raise_level():
 
 # View Pending Requests - /hero/view_pending_requests/{hero_id} (GET)
 @router.get("/view_pending_requests/{hero_id}")
-def view_pending_requests():
-    return [
-        {
-            "guild_name":"string",
-            "rank":"number",
-            "gold":"number" 
-        }
-    ]
+def view_pending_requests(hero_id: int):
+    requests = []
+    with db.engine.begin() as connection:
+        recruit = connection.execute(sqlalchemy.text
+        ("""SELECT name, gold 
+        FROM recruitment 
+        JOIN guild ON recruitment.guild_id = guild.id 
+        WHERE recruitment.hero_id = :id"""), [{"id": hero_id}])
+
+        for request in recruit:
+            requests.append({
+                "guild_name": request.name,
+                "gold": request.gold
+            })
+
+    return requests
 
 # Accept Request - /hero/accept_request/{hero_id} (POST)
 @router.post("/accept_request/{hero_id}")
