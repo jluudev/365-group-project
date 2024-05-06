@@ -51,9 +51,25 @@ def view_pending_requests(hero_id: int):
 
 # Accept Request - /hero/accept_request/{hero_id} (POST)
 @router.post("/accept_request/{hero_id}")
-def accept_request(guild_name: str):
+def accept_request(hero_id: int, guild_name: str):
+    sql_to_execute = sqlalchemy.text("""
+    
+    """)
+    try:
+        with db.engine.begin() as connection:
+            guild_id = connection.execute(sqlalchemy.text("SELECT guild.id FROM guild WHERE guild.name = :guild_name"), {"guild_name": guild_name}).scalar()
+            guild_capacity = connection.execute(sqlalchemy.text("SELECT guild.player_capacity FROM guild WHERE guild.id = :guild_id"), {"guild_id": guild_id}).scalar()
+            guild_num = connection.execute(sqlalchemy.text("SELECT COUNT(*) FROM hero WHERE hero.guild_id = :guild_id"), {"guild_id": guild_id}).scalar()
+            if guild_capacity > guild_num:
+                connection.execute(sqlalchemy.text("UPDATE hero SET guild_id = :guild_id WHERE hero.id = :hero_id"), {"guild_id": guild_id, "hero_id": hero_id})
+                connection.execute(sqlalchemy.text("UPDATE recruitment SET (status, response_date) = ('accepted', now()) WHERE recruitment.hero_id = :hero_id AND recruitment.guild_id = :guild_id"), {"guild_id": guild_id, "hero_id": hero_id})
+            else:
+                raise Exception("Guild already full, rolling back.")
+    except Exception as error:
+        print(f"Error returned: <<<{error}>>>")
+
     return {
-        "success": "boolean"
+        "success": "true"
     }
 
 # Attack Monster - /hero/attack_monster/{hero_id}/ (POST)
