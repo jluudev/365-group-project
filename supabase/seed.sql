@@ -41,4 +41,5 @@ INSERT INTO hero (name, power, health, guild_id) VALUES
   ('Sorceress123', 10, 50, 1),
   ('OPbishop', 12, 25, 1),
   ('Bob', 5, 20, 2)
+  ('Dylan', 10, 50, NULL)
 ;
