@@ -2,6 +2,9 @@ from fastapi import APIRouter, Depends
 from enum import Enum
 from pydantic import BaseModel
 from src.api import auth
+import sqlalchemy
+from src import database as db
+
 
 router = APIRouter(
     prefix="/world",
@@ -20,10 +23,31 @@ class Hero(BaseModel):
 # Endpoints
 # View Heroes - /world/view_heroes/{world_id} (GET)
 @router.get("/view_heroes/{world_id}")
-def view_heroes():
-    return {
-        "success": True
-    }
+def view_heroes(world_id: int):
+
+    heroes = []
+    with db.engine.begin() as connection:
+        sql_to_execute ="""
+            SELECT name, power, health
+            FROM hero
+            JOIN recruitment ON hero.id = recruitment.hero_id
+            JOIN guild ON recruitment.guild_id = guild.id
+            WHERE guild.world_id = :world_id
+            """
+        
+        result = connection.execute(sqlalchemy.text(sql_to_execute), {"world_id": world_id})
+
+        for row in result:
+            heroes.append({
+                "name": row.name,
+                "power": row.power,
+                "health": row.health
+            })
+
+    return {"heroes": heroes}
+    # return {
+    #     "success": True
+    # }
 
 # Get Quests - /world/get_quests/{world_id} (GET)
 @router.get("/get_quests/{world_id}")
