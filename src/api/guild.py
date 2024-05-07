@@ -37,7 +37,7 @@ def recruit_hero(guild_id: int, hero: Hero):
     INSERT INTO recruitment (hero_id, guild_id, status, request_date)
     SELECT id, :guild_id, 'pending', now() 
     FROM hero 
-    WHERE name = :hero_name AND guild_id IS NULL;
+    WHERE name = :hero_name AND guild_id IS NULL AND world_id = (SELECT world_id FROM guild WHERE id = :guild_id);
     """)
 
     with db.engine.begin() as connection:

@@ -13,7 +13,27 @@ To do so:
 Elminster the Sage accepts Mages Only and now he can join them in the dungeons.
 
 # Testing results
-1. 
+1. `GET /world/view_heroes/{world_id}`
+
+    #### Find all heroes not in a guild in Scania (world_id = 1)
+    ```
+    curl -X 'GET' \
+    'http://arthurslastcrusade.onrender.com/world/view_heroes/1' \
+    -H 'accept: application/json' \
+    -H 'access_token: test'
+    ```
+
+    Response body:
+    ```json
+        "heroes": [
+            {
+            "name": "Dylan",
+            "power": 10,
+            "health": 50
+            }
+        ]
+    ```
+
 2. `POST /guild/recruit_hero/{guild_id}/`
     
     #### Mages Only (guild_id = 1) want to recruit hero (Dylan) that is not in a guild.
@@ -54,5 +74,40 @@ Elminster the Sage accepts Mages Only and now he can join them in the dungeons.
         }
     ```
 
+3. GET /hero/view_pending_requests/{hero_id}
+    #### Dylan (hero_id = 7) checks all their pending guild requests
 
-3. 
+    ```
+    curl -X 'GET' \
+    'http://arthurslastcrusade.onrender.com/hero/view_pending_requests/7' \
+    -H 'accept: application/json' \
+    -H 'access_token: test'
+    ```
+
+    Response body:
+    ```json
+        [
+            {
+                "guild_name": "Mages Only",
+                "gold": 300
+            }
+        ]
+    ```
+
+4. POST /hero/accept_request/{hero_id}/
+    #### Dylan (hero_id = 7) accepts pending request from Mages Only
+
+    ```
+    curl -X 'POST' \
+    'http://arthurslastcrusade.onrender.com/hero/accept_request/7?guild_name=Mages%20Only' \
+    -H 'accept: application/json' \
+    -H 'access_token: test' \
+    -d ''
+    ```
+
+    Response body:
+    ```json
+        {
+            "success": true
+        }
+    ```

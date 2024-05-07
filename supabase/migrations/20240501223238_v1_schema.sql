@@ -42,7 +42,8 @@ CREATE TABLE hero (
     name TEXT NOT NULL UNIQUE,
     power INT,
     health INT,
-    guild_id BIGINT REFERENCES guild(id)
+    guild_id BIGINT REFERENCES guild(id),
+    world_id BIGINT REFERENCES world(id)
 );
 
 -- Table for Recruitment

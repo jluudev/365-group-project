@@ -30,10 +30,8 @@ def view_heroes(world_id: int):
         sql_to_execute ="""
             SELECT name, power, health
             FROM hero
-            JOIN recruitment ON hero.id = recruitment.hero_id
-            JOIN guild ON recruitment.guild_id = guild.id
-            WHERE guild.world_id = :world_id
-            """
+            WHERE guild_id IS NULL AND world_id = :world_id;
+        """
         
         result = connection.execute(sqlalchemy.text(sql_to_execute), {"world_id": world_id})
 
@@ -44,7 +42,7 @@ def view_heroes(world_id: int):
                 "health": row.health
             })
 
-    return {"heroes": heroes}
+    return heroes
     # return {
     #     "success": True
     # }

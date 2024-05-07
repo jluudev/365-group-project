@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from enum import Enum
 from pydantic import BaseModel
 from src.api import auth
@@ -53,24 +53,37 @@ def view_pending_requests(hero_id: int):
 @router.post("/accept_request/{hero_id}")
 def accept_request(hero_id: int, guild_name: str):
     sql_to_execute = sqlalchemy.text("""
-    
+    WITH guild_info AS (
+        SELECT g.id AS guild_id, g.player_capacity
+        FROM guild g
+        WHERE g.name = :guild_name
+        FOR UPDATE
+    ),
+    current_hero_count AS (
+        SELECT COUNT(*) AS current_heroes
+        FROM hero h
+        WHERE h.guild_id IN (SELECT guild_id FROM guild_info)
+    ),
+    update_hero AS (
+        UPDATE hero
+        SET guild_id = (SELECT guild_id FROM guild_info)
+        WHERE id = :hero_id AND guild_id IS NULL AND
+              (SELECT current_heroes FROM current_hero_count) < (SELECT player_capacity FROM guild_info)
+        RETURNING guild_id
+    )
+    UPDATE recruitment
+    SET status = 'accepted', response_date = now()
+    WHERE hero_id = :hero_id AND guild_id IN (SELECT guild_id FROM update_hero)
+    RETURNING hero_id;
     """)
-    try:
-        with db.engine.begin() as connection:
-            guild_id = connection.execute(sqlalchemy.text("SELECT guild.id FROM guild WHERE guild.name = :guild_name"), {"guild_name": guild_name}).scalar()
-            guild_capacity = connection.execute(sqlalchemy.text("SELECT guild.player_capacity FROM guild WHERE guild.id = :guild_id"), {"guild_id": guild_id}).scalar()
-            guild_num = connection.execute(sqlalchemy.text("SELECT COUNT(*) FROM hero WHERE hero.guild_id = :guild_id"), {"guild_id": guild_id}).scalar()
-            if guild_capacity > guild_num:
-                connection.execute(sqlalchemy.text("UPDATE hero SET guild_id = :guild_id WHERE hero.id = :hero_id"), {"guild_id": guild_id, "hero_id": hero_id})
-                connection.execute(sqlalchemy.text("UPDATE recruitment SET (status, response_date) = ('accepted', now()) WHERE recruitment.hero_id = :hero_id AND recruitment.guild_id = :guild_id"), {"guild_id": guild_id, "hero_id": hero_id})
-            else:
-                raise Exception("Guild already full, rolling back.")
-    except Exception as error:
-        print(f"Error returned: <<<{error}>>>")
 
-    return {
-        "success": "true"
-    }
+    with db.engine.begin() as connection:
+        result = connection.execute(sql_to_execute, {"guild_name": guild_name, "hero_id": hero_id})
+        hero_updated = result.fetchone()
+        if hero_updated:
+            return {"success": True}
+        else:
+            raise HTTPException(status_code=400, detail="Request not found or hero already in a guild or guild is full")
 
 # Attack Monster - /hero/attack_monster/{hero_id}/ (POST)
 @router.post("/attack_monster/{hero_id}")
