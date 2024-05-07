@@ -38,7 +38,7 @@ Elminster the Sage accepts Mages Only and now he can join them in the dungeons.
     #### Mages Only (guild_id = 1) want to recruit hero (Dylan) that is not in a guild.
     ```
     curl -X 'POST' \
-    'http://arthurslastcrusade.onrender.com/guild/recruit_hero/1' \
+    'https://arthurslastcrusade.onrender.com/guild/recruit_hero/1' \
     -H 'accept: application/json' \
     -H 'access_token: 4888d45f8ecd9127e7b5aef96fb5f934' \
     -H 'Content-Type: application/json' \
@@ -78,7 +78,7 @@ Elminster the Sage accepts Mages Only and now he can join them in the dungeons.
 
     ```
     curl -X 'GET' \
-    'http://arthurslastcrusade.onrender.com/hero/view_pending_requests/7' \
+    'https://arthurslastcrusade.onrender.com/hero/view_pending_requests/7' \
     -H 'accept: application/json' \
     -H 'access_token: 4888d45f8ecd9127e7b5aef96fb5f934'
     ```
@@ -98,7 +98,7 @@ Elminster the Sage accepts Mages Only and now he can join them in the dungeons.
 
     ```
     curl -X 'POST' \
-    'http://arthurslastcrusade.onrender.com/hero/accept_request/7?guild_name=Mages%20Only' \
+    'https://arthurslastcrusade.onrender.com/hero/accept_request/7?guild_name=Mages%20Only' \
     -H 'accept: application/json' \
     -H 'access_token: 4888d45f8ecd9127e7b5aef96fb5f934' \
     -d ''
