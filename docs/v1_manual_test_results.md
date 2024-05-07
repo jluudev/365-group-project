@@ -18,11 +18,10 @@ Elminster the Sage accepts Mages Only and now he can join them in the dungeons.
     #### Find all heroes not in a guild in Scania (world_id = 1)
     ```
     curl -X 'GET' \
-    'http://arthurslastcrusade.onrender.com/world/view_heroes/1' \
+    'https://arthurslastcrusade.onrender.com/world/view_heroes/1' \
     -H 'accept: application/json' \
-    -H 'access_token: test'
+    -H 'access_token: 4888d45f8ecd9127e7b5aef96fb5f934'
     ```
-
     Response body:
     ```json
         "heroes": [
@@ -41,7 +40,7 @@ Elminster the Sage accepts Mages Only and now he can join them in the dungeons.
     curl -X 'POST' \
     'http://arthurslastcrusade.onrender.com/guild/recruit_hero/1' \
     -H 'accept: application/json' \
-    -H 'access_token: test' \
+    -H 'access_token: 4888d45f8ecd9127e7b5aef96fb5f934' \
     -H 'Content-Type: application/json' \
     -d '{
     "hero_name": "Dylan"
@@ -60,7 +59,7 @@ Elminster the Sage accepts Mages Only and now he can join them in the dungeons.
     curl -X 'POST' \
     'http://arthurslastcrusade.onrender.com/guild/recruit_hero/1' \
     -H 'accept: application/json' \
-    -H 'access_token: test' \
+    -H 'access_token: 4888d45f8ecd9127e7b5aef96fb5f934' \
     -H 'Content-Type: application/json' \
     -d '{
     "hero_name": "Dylan"
@@ -81,7 +80,7 @@ Elminster the Sage accepts Mages Only and now he can join them in the dungeons.
     curl -X 'GET' \
     'http://arthurslastcrusade.onrender.com/hero/view_pending_requests/7' \
     -H 'accept: application/json' \
-    -H 'access_token: test'
+    -H 'access_token: 4888d45f8ecd9127e7b5aef96fb5f934'
     ```
 
     Response body:
@@ -101,7 +100,7 @@ Elminster the Sage accepts Mages Only and now he can join them in the dungeons.
     curl -X 'POST' \
     'http://arthurslastcrusade.onrender.com/hero/accept_request/7?guild_name=Mages%20Only' \
     -H 'accept: application/json' \
-    -H 'access_token: test' \
+    -H 'access_token: 4888d45f8ecd9127e7b5aef96fb5f934' \
     -d ''
     ```
 
