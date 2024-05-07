@@ -74,7 +74,7 @@ Elminster the Sage accepts Mages Only and now he can join them in the dungeons.
         }
     ```
 
-3. GET /hero/view_pending_requests/{hero_id}
+3. `GET /hero/view_pending_requests/{hero_id}`
     #### Dylan (hero_id = 7) checks all their pending guild requests
 
     ```
@@ -94,7 +94,7 @@ Elminster the Sage accepts Mages Only and now he can join them in the dungeons.
         ]
     ```
 
-4. POST /hero/accept_request/{hero_id}/
+4. `POST /hero/accept_request/{hero_id}/`
     #### Dylan (hero_id = 7) accepts pending request from Mages Only
 
     ```
