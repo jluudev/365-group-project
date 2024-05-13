@@ -36,12 +36,12 @@ INSERT INTO guild (name, player_capacity, gold, world_id) VALUES
   ('AFK', 10, 50, 6)
 ;
 
-INSERT INTO hero (name, power, health, guild_id, world_id) VALUES
-  ('Wizard101', 10, 50, 1, 1),
-  ('Sorceress123', 10, 50, 1, 1),
-  ('OPbishop', 12, 25, 2, 2),
-  ('Bob', 5, 20, NULL, 4),
-  ('Joe', 10, 50, NULL, 5),
-  ('Bill', 10, 50, NULL, 6),
-  ('Dylan', 10, 50, NULL, 1)
+INSERT INTO hero (name, power, health, guild_id, world_id, level, xp) VALUES
+  ('Wizard101', 10, 50, 1, 1, 1, 0),
+  ('Sorceress123', 10, 50, 1, 1, 5, 0),
+  ('OPbishop', 12, 25, 2, 2, 3, 0),
+  ('Bob', 5, 20, NULL, 4, 2, 0),
+  ('Joe', 10, 50, NULL, 5, 9, 0),
+  ('Bill', 10, 50, NULL, 6, 7, 0),
+  ('Dylan', 10, 50, NULL, 1, 6, 0)
 ;
