@@ -72,4 +72,5 @@ CREATE TABLE party (
 CREATE VIEW damage_assessment AS
 SELECT dungeon_id, hero_id
 FROM party
-WHERE health = 0;
+JOIN hero ON party.hero_id = hero.id
+WHERE hero.health = 0;
