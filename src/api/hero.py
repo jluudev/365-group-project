@@ -102,9 +102,18 @@ def accept_request(hero_id: int, guild_name: str):
 
 # Attack Monster - /hero/attack_monster/{hero_id}/ (POST)
 @router.post("/attack_monster/{hero_id}")
-def attack_monster(monster_id: int):
+def attack_monster(monster_id: int, hero_id: int):
+    with db.engine.begin() as connection:
+        connection.execute(sqlalchemy.text
+        ("""
+        UPDATE monster
+        SET health = (SELECT health FROM monster WHERE id = :monster_id) - 
+        (SELECT power FROM hero WHERE id = :hero_id)
+        WHERE id = :monster_id
+        """), [{"monster_id": monster_id, "hero_id": hero_id}])
+
     return {
-        "success": "boolean"
+        "success": "OK"
     }
 
 # Check Health - /hero/check_health/{hero_id}/ (GET)
@@ -123,9 +132,15 @@ def run_away():
 
 # Die - /hero/die/{hero_id}/ (POST)
 @router.post("/die/{hero_id}")
-def die():
+def die(hero_id: int):
+    with db.engine.begin() as connection:
+        connection.execute(sqlalchemy.text
+        ("""
+        DELETE FROM hero
+        WHERE id = :hero_id
+        """), [{"hero_id": hero_id}])
     return {
-        "success": "boolean"
+        "success": "OK"
     }
 
 # Find Monsters - /hero/find_monsters/{dungeon_id}/ (GET)
