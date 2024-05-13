@@ -18,16 +18,31 @@ router = APIRouter(
 
 # Check XP - /hero/check_xp/{hero_id} (POST)
 @router.post("/check_xp/{hero_id}")
-def check_xp():
+def check_xp(hero_id: int):
+    with db.engine.begin() as connection:
+        xp = connection.execute(sqlalchemy.text
+            ("""
+            SELECT xp
+            FROM hero
+            WHERE id = :hero_id
+            """), [{"hero_id": hero_id}]
+        ).scalar_one()
     return {
-        "xp": "number"
+        "xp": xp
     }
 
 # Raise Level - /hero/raise_level/{hero_id} (POST)
 @router.post("/raise_level/{hero_id}")
-def raise_level():
+def raise_level(hero_id: int):
+    with db.engine.begin() as connection:
+        connection.execute(sqlalchemy.text
+        ("""
+        UPDATE hero
+        SET level = (SELECT level FROM hero WHERE id = :hero_id) + 1
+        WHERE id = :hero_id
+        """), [{"hero_id": hero_id}])
     return {
-        "success": "boolean"
+        "success": "OK"
     }
 
 # View Pending Requests - /hero/view_pending_requests/{hero_id} (GET)
