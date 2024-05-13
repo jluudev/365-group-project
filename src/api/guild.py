@@ -69,6 +69,33 @@ def remove_heroes(guild_id: int, heroes: list[Hero]):
 # Send Party - /guild/send_party/{guild_id} (POST)
 @router.post("/send_party/{guild_id}")
 def send_party(guild_id: int, party: list[Hero], dungeon_name: str):
-    return {
-        "success": "boolean"
-    }
+    # Check if the guild exists
+    guild_query = sqlalchemy.text("SELECT * FROM guild WHERE id = :guild_id")
+    with db.engine.connect() as connection:
+        guild_result = connection.execute(guild_query, {"guild_id": guild_id})
+        guild = guild_result.fetchone()
+        if not guild:
+            raise HTTPException(status_code=404, detail="Guild not found.")
+
+    # Check if the dungeon exists and has available capacity
+    dungeon_query = sqlalchemy.text("SELECT * FROM dungeon WHERE name = :dungeon_name")
+    with db.engine.connect() as connection:
+        dungeon_result = connection.execute(dungeon_query, {"dungeon_name": dungeon_name})
+        dungeon = dungeon_result.fetchone()
+        if not dungeon:
+            raise HTTPException(status_code=404, detail="Dungeon not found.")
+        if dungeon["party_capacity"] < len(party):
+            raise HTTPException(status_code=400, detail="Dungeon doesn't have enough capacity for the party.")
+
+    # Update heroes' dungeon_id in a single SQL statement
+    update_hero_query = sqlalchemy.text(
+        "UPDATE hero SET dungeon_id = :dungeon_id WHERE id IN :hero_ids"
+    )
+    with db.engine.connect() as connection:
+        hero_ids = [hero.id for hero in party]
+        connection.execute(
+            update_hero_query,
+            {"dungeon_id": dungeon["id"], "hero_ids": tuple(hero_ids)}
+        )
+
+    return {"success": True}

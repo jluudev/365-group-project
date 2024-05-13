@@ -125,10 +125,27 @@ def check_health():
 
 # Run Away - /hero/run_away/{hero_id}/ (POST)
 @router.post("/run_away/{hero_id}")
-def run_away():
-    return {
-        "success": "boolean"
-    }
+def run_away(hero_id: int):
+    # Check if the hero is targeted by any monster
+    sql_to_execute = """
+    SELECT COUNT(*) 
+    FROM targeting 
+    WHERE hero_id = :hero_id;
+    """
+    with db.engine.connect() as connection:
+        result = connection.execute(sqlalchemy.text(sql_to_execute), {"hero_id": hero_id})
+        row_count = result.fetchone()[0]
+        if row_count > 0:
+            return {"success": False, "message": "Cannot run away while being targeted by a monster"}
+        else:
+            sql_to_execute = """
+                UPDATE hero
+                SET dungeon_id = NULL
+                WHERE id = :hero_id;
+                """
+            connection.execute(sqlalchemy.text(sql_to_execute), {"hero_id": hero_id})
+            return {"success": True}
+    
 
 # Die - /hero/die/{hero_id}/ (POST)
 @router.post("/die/{hero_id}")
