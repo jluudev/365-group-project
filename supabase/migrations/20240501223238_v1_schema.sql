@@ -42,6 +42,7 @@ CREATE TABLE hero (
     name TEXT NOT NULL UNIQUE,
     power INT,
     health INT,
+    xp INT DEFAULT 0,
     guild_id BIGINT REFERENCES guild(id),
     world_id BIGINT REFERENCES world(id)
 );
