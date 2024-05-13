@@ -14,7 +14,8 @@ CREATE TABLE dungeon (
     party_capacity INT,
     level INT,
     gold_reward INT,
-    world_id BIGINT REFERENCES world(id)
+    world_id BIGINT REFERENCES world(id),
+    status TEXT DEFAULT 'open' -- Examples: 'open', 'closed'
 );
 
 -- Table for Monster

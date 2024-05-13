@@ -26,6 +26,18 @@ class Guild(BaseModel):
 # Create Guild - /world/create_guild/{world_id} (POST)
 @router.post("/create_guild/{world_id}")
 def create_guild(world_id: int, guild: Guild):
+    sql_to_execute = """
+    INSERT INTO guild (name, max_capacity, gold, world_id)
+    VALUES (:name, :max_capacity, :gold, :world_id);
+    """
+    with db.engine.begin() as connection:
+        connection.execute(sql_to_execute, {
+            "name": guild.guild_name,
+            "max_capacity": guild.max_capacity,
+            "gold": guild.gold,
+            "world_id": world_id
+        })
+
     return {
         "success": True
     }
@@ -83,8 +95,8 @@ def send_party(guild_id: int, party: list[Hero], dungeon_name: str):
         dungeon = dungeon_result.fetchone()
         if not dungeon:
             raise HTTPException(status_code=404, detail="Dungeon not found.")
-        if dungeon["party_capacity"] < len(party):
-            raise HTTPException(status_code=400, detail="Dungeon doesn't have enough capacity for the party.")
+        if dungeon["party_capacity"] < len(party) or dungeon["status"] != "open":
+            raise HTTPException(status_code=400, detail="Dungeon doesn't have enough capacity for the party or dungeon is not open.")
 
         # Update hero dungeon_id
         update_hero_query = sqlalchemy.text(
@@ -94,6 +106,14 @@ def send_party(guild_id: int, party: list[Hero], dungeon_name: str):
         connection.execute(
             update_hero_query,
             {"dungeon_id": dungeon["id"], "hero_ids": hero_ids}
+        )
+
+        update_dungeon_query = sqlalchemy.text(
+            "UPDATE dungeon SET status = 'closed' WHERE id = :dungeon_id"
+        )
+        connection.execute(
+            update_dungeon_query,
+            {"dungeon_id": dungeon["id"]}
         )
 
     return {"success": True}

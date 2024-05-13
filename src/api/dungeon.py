@@ -3,6 +3,9 @@ from enum import Enum
 from pydantic import BaseModel
 from src.api import auth
 
+import sqlalchemy
+from src import database as db
+
 router = APIRouter(
     prefix="/dungeon",
     tags=["dungeon"],
@@ -21,22 +24,52 @@ class Dungeon(BaseModel):
 
 class Monster(BaseModel):
     type: str
+    health: int
+    power: int
+    level: int
 
 class Hero(BaseModel):
     hero_name: str
 
 # Create Dungeon - /dungeon/create_dungeon/{world_id} (POST)
 @router.post("/create_dungeon/{world_id}")
-def create_dungeon(dungeon: Dungeon):
-    return {
-        "success": "boolean"
-    }
+def create_dungeon(world_id: int, dungeon: Dungeon):
+    sql_to_execute = """
+    INSERT INTO dungeon (name, level, player_capacity, monster_capacity, reward, world_id)
+    VALUES (:name, :level, :player_capacity, :monster_capacity, :reward, :world_id);
+    """
+    with db.engine.begin() as connection:
+        result = connection.execute(sql_to_execute, {
+            "name": dungeon.dungeon_name,
+            "level": dungeon.dungeon_level,
+            "player_capacity": dungeon.player_capacity,
+            "monster_capacity": dungeon.monster_capacity,
+            "reward": dungeon.reward,
+            "world_id": world_id
+        })
+        if result.rowcount > 0:
+            return {"success": True}
+        else:
+            return {"success": False}
 
 # Create Monster - /dungeon/create_monster/{dungeon_id} (POST)
 @router.post("/create_monster/{dungeon_id}")
-def create_monster(monsters: Monster):
+def create_monster(dungeon_id: int, monsters: Monster):
+    sql_to_execute = """
+    INSERT INTO monster (type, health, dungeon_id, power, level)
+    VALUES (:type, :health, :dungeon_id, :power, :level);
+    """
+    with db.engine.begin() as connection:
+        result = connection.execute(sql_to_execute, {
+            "type": monsters.type,
+            "health": monsters.health,
+            "dungeon_id": dungeon_id,
+            "power": monsters.power,
+            "level": monsters.level
+        })
+
     return {
-        "success": "boolean"
+        "success": True
     }
 
 # Collect Bounty - /dungeon/collect_bounty/{guild_id} (POST)
