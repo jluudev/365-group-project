@@ -46,7 +46,7 @@ def die(monster_id: int):
     ),
     deleted_monster AS (
         DELETE FROM monster
-        WHERE id = :monster_id AND health = 0
+        WHERE id = :monster_id AND health <= 0
         RETURNING *
     )
     SELECT * FROM deleted_monster;

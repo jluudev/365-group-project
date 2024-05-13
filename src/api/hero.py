@@ -38,7 +38,7 @@ def raise_level(hero_id: int):
         connection.execute(sqlalchemy.text
         ("""
         UPDATE hero
-        SET level = (SELECT level FROM hero WHERE id = :hero_id) + 1
+        SET level = level + 1 AND xp = xp - 100
         WHERE id = :hero_id
         """), [{"hero_id": hero_id}])
     return {
@@ -153,8 +153,9 @@ def die(hero_id: int):
     with db.engine.begin() as connection:
         connection.execute(sqlalchemy.text
         ("""
-        DELETE FROM hero
-        WHERE id = :hero_id
+        UPDATE hero
+        status = 'dead'
+        WHERE id = :hero_id AND health <= 0
         """), [{"hero_id": hero_id}])
     return {
         "success": "OK"

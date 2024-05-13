@@ -44,6 +44,7 @@ CREATE TABLE hero (
     health INT,
     xp INT DEFAULT 0,
     level INT DEFAULT 1,
+    status TEXT DEFAULT 'alive', -- Examples: 'alive', 'dead'
     guild_id BIGINT REFERENCES guild(id),
     dungeon_id BIGINT REFERENCES dungeon(id),
     world_id BIGINT REFERENCES world(id)
