@@ -62,14 +62,15 @@ def recruit_hero(guild_id: int, hero: Hero):
 # Check Available Heroes - /guild/available_heroes/{guild_id} (GET)
 @router.get("/available_heroes/{guild_id}")
 def available_heroes(guild_id: int):
-    return [
-        {
-            "hero_name": "string",
-            "level": "number",
-            "power": "number",
-            "age": "number",
-        }
-    ]
+    with db.connection() as connection:
+        result = connection.execute(
+            f"SELECT name, power, health, level FROM hero WHERE guild_id = {guild_id}"
+        )
+        heroes = [
+            {"hero_name": row[0], "power": row[1], "health": row[2], "level": row[3]} 
+            for row in result.fetchall()
+        ]
+    return heroes
 
 # Remove Dead Heroes - /guild/remove_heroes/{guild_id} (POST)
 @router.post("/remove_heroes/{guild_id}")
