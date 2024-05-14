@@ -17,7 +17,7 @@ router = APIRouter(
 # Endpoints
 
 # Check XP - /hero/check_xp/{hero_id} (POST)
-@router.post("/check_xp/{hero_id}")
+@router.get("/check_xp/{hero_id}")
 def check_xp(hero_id: int):
     with db.engine.begin() as connection:
         xp = connection.execute(sqlalchemy.text

@@ -259,7 +259,7 @@ If the heroes are not yet in a guild, they will call the below as well.
     "success": "boolean"
 }
 ```
-### 4.3 Check XP - `/hero/check_xp/{hero_id}` (POST)
+### 4.3 Check XP - `/hero/check_xp/{hero_id}` (GET)
 
 ***Response***:
 ```json
@@ -412,7 +412,7 @@ This can occur if a monster is killed by a hero.
 }
 ```
 
-### 6.3 Die - `/monster/die/{monster_id}` (GET)
+### 6.3 Die - `/monster/die/{monster_id}` (POST)
 
 **Response**:
 
