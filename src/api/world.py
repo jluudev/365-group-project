@@ -18,6 +18,9 @@ class Hero(BaseModel):
     classType: str
     level: int
     age: int
+    power: int
+    health: int
+    xp: int = 0
 
 
 # Endpoints
@@ -49,24 +52,53 @@ def view_heroes(world_id: int):
 
 # Get Quests - /world/get_quests/{world_id} (GET)
 @router.get("/get_quests/{world_id}")
-def get_quests():
-    return [
-            {
-                "dungeon_name": "string",
-                "level": "number",
-            }
-        ]
+def get_quests(world_id : int):
+    with db.engine.connect() as connection:
+        # Fetch dungeon names and levels for the provided world_id
+        result = connection.execute(
+            sqlalchemy.text("""SELECT name, level FROM dungeon WHERE world_id = :world_id AND status = 'open'"""),
+            {"world_id": world_id}
+        )
+        dungeons = [{"dungeon_name": row[0], "level": row[1]} for row in result.fetchall()]
+    return dungeons
 
 # Create Hero - /world/create_hero/{world_id} (POST)
 @router.post("/create_hero/{world_id}")
-def create_hero(hero: Hero):
-    return {
-        "success": True
-    }
+def create_hero(world_id: int, hero: Hero):
+    sql_to_execute = """
+    INSERT INTO hero (name, class, level, age, power, health, xp, world_id)
+    VALUES (:name, :classType, :level, :age, :power, :health, :xp, :world_id);
+    """
+    with db.engine.begin() as connection:
+        result = connection.execute(sql_to_execute, {
+            "name": hero.hero_name,
+            "classType": hero.classType,
+            "level": hero.level,
+            "age": hero.age,
+            "power": hero.power,
+            "health": hero.health,
+            "xp": hero.xp,
+            "world_id": world_id
+        })
+        
+        # Success if the hero is created
+        if result.rowcount > 0:
+            return {"success": True}
+        else:
+            return {"success": False, "message": "Hero not created"}
+
 
 # Age Hero - /world/age_hero/{hero_id} (POST)
 @router.post("/age_hero/{hero_id}")
-def age_hero():
-    return {
-        "success": True
-    }
+def age_hero(hero_id: int):
+    sql_to_execute = """
+    UPDATE hero
+    SET age = age + 1
+    WHERE id = :hero_id;
+    """
+    with db.engine.begin() as connection:
+        result = connection.execute(sqlalchemy.text(sql_to_execute), {"hero_id": hero_id})
+        if result.rowcount > 0:
+            return {"success": True}
+        else:
+            return {"success": False, "message": "Hero not found"}
