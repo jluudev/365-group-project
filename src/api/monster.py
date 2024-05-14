@@ -18,15 +18,22 @@ router = APIRouter(
 
 # Find Heroes - /monster/find_heroes/{dungeon_id}/ (GET)
 @router.get("/find_heroes/{dungeon_id}")
-def find_heroes():
-    return [
-        {
-            "id":"number",
-            "name" : "string",
-            "level": "number",
-            "power": "number",
-        }
-    ]
+def find_heroes(dungeon_id: int):
+    with db.connection() as connection:
+        result = connection.execute(
+            f"""
+            SELECT hero.id, hero.name, hero.level, hero.power
+            FROM hero
+            INNER JOIN guild ON hero.guild_id = guild.id
+            INNER JOIN dungeon ON guild.world_id = dungeon.world_id
+            WHERE dungeon.id = {dungeon_id}
+            """
+        )
+        heroes = [
+            {"id": row[0], "name": row[1], "level": row[2], "power": row[3]} 
+            for row in result.fetchall()
+        ]
+    return heroes
 
 # Attack Hero - /monster/attack_hero/{monster_id}/ (POST)
 @router.post("/attack_hero/{monster_id}")
