@@ -74,19 +74,41 @@ def create_monster(dungeon_id: int, monsters: Monster):
 
 # Collect Bounty - /dungeon/collect_bounty/{guild_id} (POST)
 @router.post("/collect_bounty/{guild_id}")
-def collect_bounty():
+def collect_bounty(dungeon_id: int):
+    sql_to_execute = """
+    SELECT gold_reward
+    FROM dungeon
+    WHERE id = :dungeon_id AND status = 'closed'
+    """
+    with db.engine.begin() as connection:
+        gold = connection.execute(sqlalchemy.text(sql_to_execute), {"dungeon_id": dungeon_id}).scalar()
+
+    if gold == None:
+        gold = 0
+
     return {
-        "gold": "number"
+        "gold": gold
     }
 
 # Assess Damage - /dungeon/assess_damage/{dungeon_id} (GET)
 @router.get("/assess_damage/{dungeon_id}")
-def assess_damage():
-    return [
-        {
-            "hero_name": "string",
-            "level": "number",
-            "power": "number",
-            "age": "number",
-        }
-    ]
+def assess_damage(guild_id: int, dungeon_id: int):
+    sql_to_execute = """
+    SELECT name, level, power, health
+    FROM hero
+    WHERE guild_id = :guild_id AND dungeon_id = :dungeon_id
+    """
+    with db.engine.begin() as connection:
+        heroes = connection.execute(sqlalchemy.text(sql_to_execute), {"guild_id": guild_id, "dungeon_id": dungeon_id})
+
+    returning_heroes = []
+    for hero in heroes:
+        returning_heroes.append(
+            {
+                "hero_name": hero.name,
+                "level": hero.level,
+                "power": hero.power,
+                "health": hero.health
+            }
+        )
+    return returning_heroes

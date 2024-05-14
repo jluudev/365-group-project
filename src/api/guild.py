@@ -74,8 +74,32 @@ def available_heroes(guild_id: int):
 # Remove Dead Heroes - /guild/remove_heroes/{guild_id} (POST)
 @router.post("/remove_heroes/{guild_id}")
 def remove_heroes(guild_id: int, heroes: list[Hero]):
+    # hero_sql_query = ""
+    # for hero in heroes:
+    #     hero_sql_query += " OR hero.name = " + hero.hero_name
+        
+    # sql_to_execute = """
+
+    # UPDATE hero
+    # SET (guild_id) = (NULL)
+    # WHEN hero.name = NULL :hero_sql_query
+    # """
+    # with db.engine.begin() as connection:
+    #     connection.execute(sqlalchemy.text(sql_to_execute), {"hero_sql_query": hero_sql_query})
+
+    single_hero = ':single_hero'
+    all_heroes = ','.join(single_hero for unused in heroes)
+    sql_to_execute = """
+    UPDATE hero
+    SET guild_id = NULL
+    WHERE hero.name IN :hero_list AND guild_id = :guild_id
+    """
+
+    with db.engine.begin() as connection:
+        connection.execute(sqlalchemy.text(sql_to_execute), {"hero_list": all_heroes, "guild_id": guild_id})
+
     return {
-        "success": "boolean"
+        "success": True
     }
 
 # Send Party - /guild/send_party/{guild_id} (POST)
