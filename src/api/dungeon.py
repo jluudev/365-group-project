@@ -74,21 +74,27 @@ def create_monster(dungeon_id: int, monsters: Monster):
 
 # Collect Bounty - /dungeon/collect_bounty/{guild_id} (POST)
 @router.post("/collect_bounty/{guild_id}")
-def collect_bounty(dungeon_id: int):
-    sql_to_execute = """
-    SELECT gold_reward
-    FROM dungeon
-    WHERE id = :dungeon_id AND status = 'closed'
-    """
+def collect_bounty(guild_id: int, dungeon_id: int):
+    # Only collect bounty if no monsters are alive (no monsters with that dungeon_id)
+    sql_to_execute = sqlalchemy.text("""
+    WITH monster_count AS (
+    SELECT COUNT(*) AS count
+    FROM monster
+    WHERE dungeon_id = :dungeon_id AND health > 0
+    )
+    UPDATE guild
+    SET gold = gold + (SELECT gold_reward FROM dungeon WHERE id = :dungeon_id)
+    WHERE id = :guild_id
+    AND (SELECT count FROM monster_count) = 0
+    RETURNING gold;
+    """)
     with db.engine.begin() as connection:
-        gold = connection.execute(sqlalchemy.text(sql_to_execute), {"dungeon_id": dungeon_id}).scalar()
-
-    if gold == None:
-        gold = 0
-
-    return {
-        "gold": gold
-    }
+        result = connection.execute(sql_to_execute, {"dungeon_id": dungeon_id, "guild_id": guild_id})
+        if result.rowcount > 0:
+            # Return the amount of gold collected
+            return {"gold": result.fetchone()[0]}
+        else:
+            return {"success": False, "message": "Failed to collect bounty"}
 
 # Assess Damage - /dungeon/assess_damage/{dungeon_id} (GET)
 @router.get("/assess_damage/{dungeon_id}")
@@ -96,7 +102,7 @@ def assess_damage(guild_id: int, dungeon_id: int):
     sql_to_execute = """
     SELECT name, level, power, health
     FROM hero
-    WHERE guild_id = :guild_id AND dungeon_id = :dungeon_id
+    WHERE guild_id = :guild_id AND dungeon_id = :dungeon_id AND health <= 0
     """
     with db.engine.begin() as connection:
         heroes = connection.execute(sqlalchemy.text(sql_to_execute), {"guild_id": guild_id, "dungeon_id": dungeon_id})

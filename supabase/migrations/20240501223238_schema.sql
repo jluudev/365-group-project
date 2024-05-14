@@ -68,9 +68,3 @@ CREATE TABLE targeting (
     hero_id BIGINT REFERENCES hero(id),
     monster_id BIGINT REFERENCES monster(id)
 );
-
--- Create View for Damage Assessment
-CREATE VIEW damage_assessment AS
-SELECT dungeon_id, id AS hero_id
-FROM hero
-WHERE health = 0;

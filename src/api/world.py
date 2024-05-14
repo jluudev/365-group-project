@@ -53,10 +53,10 @@ def view_heroes(world_id: int):
 # Get Quests - /world/get_quests/{world_id} (GET)
 @router.get("/get_quests/{world_id}")
 def get_quests(world_id : int):
-    with db.connection() as connection:
+    with db.engine.connect() as connection:
         # Fetch dungeon names and levels for the provided world_id
         result = connection.execute(
-            sqlalchemy.text("SELECT name, level FROM dungeon WHERE world_id = :world_id"),
+            sqlalchemy.text("""SELECT name, level FROM dungeon WHERE world_id = :world_id AND status = 'open'"""),
             {"world_id": world_id}
         )
         dungeons = [{"dungeon_name": row[0], "level": row[1]} for row in result.fetchall()]

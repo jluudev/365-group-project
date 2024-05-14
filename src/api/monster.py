@@ -19,16 +19,16 @@ router = APIRouter(
 # Find Heroes - /monster/find_heroes/{dungeon_id}/ (GET)
 @router.get("/find_heroes/{dungeon_id}")
 def find_heroes(dungeon_id: int):
-    with db.connection() as connection:
+    with db.engine.begin() as connection:
         result = connection.execute(
-            f"""
+            sqlalchemy.text("""
             SELECT hero.id, hero.name, hero.level, hero.power
             FROM hero
-            INNER JOIN guild ON hero.guild_id = guild.id
-            INNER JOIN dungeon ON guild.world_id = dungeon.world_id
-            WHERE dungeon.id = {dungeon_id}
+            JOIN guild ON hero.guild_id = guild.id
+            JOIN dungeon ON guild.world_id = dungeon.world_id AND dungeon.id = hero.dungeon_id
+            WHERE dungeon.id = :dungeon_id and hero.health > 0
             """
-        )
+        ), {"dungeon_id": dungeon_id})
         heroes = [
             {"id": row[0], "name": row[1], "level": row[2], "power": row[3]} 
             for row in result.fetchall()
@@ -39,7 +39,7 @@ def find_heroes(dungeon_id: int):
 @router.post("/attack_hero/{monster_id}")
 def attack_hero(hero_id: int, monster_id: int):
     with db.engine.begin() as connection:
-        connection.execute(sqlalchemy.text
+        result = connection.execute(sqlalchemy.text
         ("""
         UPDATE hero
         SET health = (SELECT health FROM hero WHERE id = :hero_id) - 
@@ -47,10 +47,18 @@ def attack_hero(hero_id: int, monster_id: int):
         WHERE id = :hero_id
         """), [{"hero_id": hero_id, "monster_id": monster_id}])
 
+        connection.execute(sqlalchemy.text(
+        """
+        INSERT INTO targeting (hero_id, monster_id)
+        VALUES (:hero_id, :monster_id)
+        """), [{"hero_id": hero_id, "monster_id": monster_id}]
+        )
 
-    return {
-        "success": "OK"
-    }
+        if result.rowcount > 0:
+            return {"success": True}
+        else:
+            return {"success": False, "message": "Hero not found"}
+
 
 # Die - /monster/die/{monster_id} (GET)
 @router.get("/die/{monster_id}")
@@ -68,7 +76,7 @@ def die(monster_id: int):
     )
     SELECT * FROM deleted_monster;
     """
-    with db.engine.connect() as connection:
+    with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text(sql_delete_monster), {"monster_id": monster_id})
         deleted_monster = result.fetchone()
 

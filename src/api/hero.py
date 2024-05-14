@@ -35,15 +35,16 @@ def check_xp(hero_id: int):
 @router.post("/raise_level/{hero_id}")
 def raise_level(hero_id: int):
     with db.engine.begin() as connection:
-        connection.execute(sqlalchemy.text
+        result = connection.execute(sqlalchemy.text
         ("""
         UPDATE hero
-        SET level = level + 1 AND xp = xp - 100
-        WHERE id = :hero_id
+        SET level = level + 1, xp = xp - 100
+        WHERE id = :hero_id AND xp >= 100
         """), [{"hero_id": hero_id}])
-    return {
-        "success": "OK"
-    }
+        if result.rowcount > 0:
+            return {"success": True}
+        else:
+            return {"success": False, "message": "Not enough XP to raise level"}
 
 # View Pending Requests - /hero/view_pending_requests/{hero_id} (GET)
 @router.get("/view_pending_requests/{hero_id}")
@@ -118,9 +119,16 @@ def attack_monster(monster_id: int, hero_id: int):
 
 # Check Health - /hero/check_health/{hero_id}/ (GET)
 @router.get("/check_health/{hero_id}")
-def check_health():
+def check_health(hero_id: int):
+    with db.engine.begin() as connection:
+        health = connection.execute(sqlalchemy.text
+        ("""
+        SELECT health
+        FROM hero
+        WHERE id = :hero_id
+        """), [{"hero_id": hero_id}]).scalar_one()
     return {
-        "health": "number"
+        "health": health
     }
 
 # Run Away - /hero/run_away/{hero_id}/ (POST)
@@ -132,34 +140,46 @@ def run_away(hero_id: int):
     FROM targeting 
     WHERE hero_id = :hero_id;
     """
-    with db.engine.connect() as connection:
+    with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text(sql_to_execute), {"hero_id": hero_id})
         row_count = result.fetchone()[0]
         if row_count > 0:
             return {"success": False, "message": "Cannot run away while being targeted by a monster"}
         else:
-            sql_to_execute = """
+            update_sql = """
                 UPDATE hero
                 SET dungeon_id = NULL
                 WHERE id = :hero_id;
                 """
-            connection.execute(sqlalchemy.text(sql_to_execute), {"hero_id": hero_id})
-            return {"success": True}
+            update = connection.execute(sqlalchemy.text(update_sql), {"hero_id": hero_id})
+            if update.rowcount > 0:
+                return {"success": True}
+            else:
+                return {"success": False, "message": "Failed to update hero's location"}
     
 
 # Die - /hero/die/{hero_id}/ (POST)
 @router.post("/die/{hero_id}")
 def die(hero_id: int):
     with db.engine.begin() as connection:
-        connection.execute(sqlalchemy.text
+        result = connection.execute(sqlalchemy.text
         ("""
         UPDATE hero
-        status = 'dead'
+        SET status = 'dead'
         WHERE id = :hero_id AND health <= 0
         """), [{"hero_id": hero_id}])
-    return {
-        "success": "OK"
-    }
+
+        # remove any targeting
+        connection.execute(sqlalchemy.text
+        ("""
+        DELETE FROM targeting
+        WHERE hero_id = :hero_id
+        """), [{"hero_id": hero_id}])
+
+        if result.rowcount > 0:
+            return {"success": True}
+        else:
+            return {"success": False, "message": "Hero is still alive or not found"}
 
 # Find Monsters - /hero/find_monsters/{dungeon_id}/ (GET)
 @router.get("/find_monsters/{dungeon_id}")

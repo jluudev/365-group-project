@@ -62,9 +62,13 @@ def recruit_hero(guild_id: int, hero: Hero):
 # Check Available Heroes - /guild/available_heroes/{guild_id} (GET)
 @router.get("/available_heroes/{guild_id}")
 def available_heroes(guild_id: int):
-    with db.connection() as connection:
+    with db.engine.begin() as connection:
         result = connection.execute(
-            f"SELECT name, power, health, level FROM hero WHERE guild_id = {guild_id}"
+            sqlalchemy.text("""
+            SELECT name, power, health, level
+            FROM hero
+            WHERE guild_id = :guild_id AND dungeon_id IS NULL
+            """), {"guild_id": guild_id}
         )
         heroes = [
             {"hero_name": row[0], "power": row[1], "health": row[2], "level": row[3]} 
@@ -75,70 +79,40 @@ def available_heroes(guild_id: int):
 # Remove Dead Heroes - /guild/remove_heroes/{guild_id} (POST)
 @router.post("/remove_heroes/{guild_id}")
 def remove_heroes(guild_id: int, heroes: list[Hero]):
-    # hero_sql_query = ""
-    # for hero in heroes:
-    #     hero_sql_query += " OR hero.name = " + hero.hero_name
-        
-    # sql_to_execute = """
-
-    # UPDATE hero
-    # SET (guild_id) = (NULL)
-    # WHEN hero.name = NULL :hero_sql_query
-    # """
-    # with db.engine.begin() as connection:
-    #     connection.execute(sqlalchemy.text(sql_to_execute), {"hero_sql_query": hero_sql_query})
-
-    single_hero = ':single_hero'
-    all_heroes = ','.join(single_hero for unused in heroes)
-    sql_to_execute = """
-    UPDATE hero
-    SET guild_id = NULL
-    WHERE hero.name IN :hero_list AND guild_id = :guild_id
-    """
-
+    hero_names = [hero.hero_name for hero in heroes]
     with db.engine.begin() as connection:
-        connection.execute(sqlalchemy.text(sql_to_execute), {"hero_list": all_heroes, "guild_id": guild_id})
-
-    return {
-        "success": True
-    }
+        result = connection.execute(
+            sqlalchemy.text("""
+            DELETE FROM hero
+            WHERE name = ANY(:hero_names) AND guild_id = :guild_id AND health <= 0
+            """), {"hero_names": hero_names, "guild_id": guild_id}
+        )
+        if result.rowcount > 0:
+            return {"success": True}
+        else:
+            return {"success": False, "message": "No dead heroes found"}
 
 # Send Party - /guild/send_party/{guild_id} (POST)
 @router.post("/send_party/{guild_id}")
 def send_party(guild_id: int, party: list[Hero], dungeon_name: str):
     # Check if the guild exists
     guild_query = sqlalchemy.text("SELECT * FROM guild WHERE id = :guild_id FOR UPDATE")
-    with db.engine.connect() as connection:
-        guild_result = connection.execute(guild_query, {"guild_id": guild_id})
-        guild = guild_result.fetchone()
+    with db.engine.begin() as connection:
+        guild = connection.execute(guild_query, {"guild_id": guild_id}).fetchone()
         if not guild:
-            raise HTTPException(status_code=404, detail="Guild not found.")
-
-        # Check if the dungeon exists and has available capacity
-        dungeon_query = sqlalchemy.text("SELECT * FROM dungeon WHERE name = :dungeon_name FOR UPDATE")
-        dungeon_result = connection.execute(dungeon_query, {"dungeon_name": dungeon_name})
-        dungeon = dungeon_result.fetchone()
-        if not dungeon:
-            raise HTTPException(status_code=404, detail="Dungeon not found.")
-        if dungeon["party_capacity"] < len(party) or dungeon["status"] != "open":
-            raise HTTPException(status_code=400, detail="Dungeon doesn't have enough capacity for the party or dungeon is not open.")
-
+            raise HTTPException(status_code=404, detail="Guild not found")
+        
         # Update hero dungeon_id
-        update_hero_query = sqlalchemy.text(
-            "UPDATE hero SET dungeon_id = :dungeon_id WHERE id = ANY(:hero_ids)"
-        )
-        hero_ids = [hero.id for hero in party]
-        connection.execute(
-            update_hero_query,
-            {"dungeon_id": dungeon["id"], "hero_ids": hero_ids}
-        )
-
-        update_dungeon_query = sqlalchemy.text(
-            "UPDATE dungeon SET status = 'closed' WHERE id = :dungeon_id"
-        )
-        connection.execute(
-            update_dungeon_query,
-            {"dungeon_id": dungeon["id"]}
-        )
+        for hero in party:
+            update_hero = sqlalchemy.text("""
+            UPDATE hero
+            SET dungeon_id = (SELECT id FROM dungeon WHERE name = :dungeon_name AND status = 'open')
+            WHERE name = :hero_name AND guild_id = :guild_id
+            """)
+            result = connection.execute(update_hero, {"hero_name": hero.hero_name, "guild_id": guild_id, "dungeon_name": dungeon_name})
+            
+            if result.rowcount == 0:
+                raise HTTPException(status_code=404, detail="Hero not found or dungeon not open")
 
     return {"success": True}
+
