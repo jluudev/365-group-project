@@ -30,9 +30,19 @@ def find_heroes():
 
 # Attack Hero - /monster/attack_hero/{monster_id}/ (POST)
 @router.post("/attack_hero/{monster_id}")
-def attack_hero(hero_id: int):
+def attack_hero(hero_id: int, monster_id: int):
+    with db.engine.begin() as connection:
+        connection.execute(sqlalchemy.text
+        ("""
+        UPDATE hero
+        SET health = (SELECT health FROM hero WHERE id = :hero_id) - 
+        (SELECT power FROM monster WHERE id = :monster_id)
+        WHERE id = :hero_id
+        """), [{"hero_id": hero_id, "monster_id": monster_id}])
+
+
     return {
-        "success": "boolean"
+        "success": "OK"
     }
 
 # Die - /monster/die/{monster_id} (GET)
