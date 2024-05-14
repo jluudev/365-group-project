@@ -111,13 +111,13 @@ def send_party(guild_id: int, party: list[Hero], dungeon_name: str):
             """)
             result = connection.execute(update_hero, {"hero_name": hero.hero_name, "guild_id": guild_id, "dungeon_name": dungeon_name})
             
-            if result.rowcount > 0:
-                connection.execute(sqlalchemy.text("""
-                                                UPDATE dungeon
-                                                SET status = 'closed'
-                                                WHERE name = :dungeon_name"""),
-                                                {"dungeon_name": dungeon_name})
-                return {"success": True}
-            else:
-                return {"success": False, "message": "Hero not found or already in a dungeon"}
+        if result.rowcount > 0:
+            connection.execute(sqlalchemy.text("""
+                                            UPDATE dungeon
+                                            SET status = 'closed'
+                                            WHERE name = :dungeon_name"""),
+                                            {"dungeon_name": dungeon_name})
+            return {"success": True}
+        else:
+            return {"success": False, "message": "Hero not found or already in a dungeon"}
 
