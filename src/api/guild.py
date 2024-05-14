@@ -121,3 +121,4 @@ def send_party(guild_id: int, party: list[Hero], dungeon_name: str):
         else:
             return {"success": False, "message": "Hero not found or already in a dungeon"}
 
+
