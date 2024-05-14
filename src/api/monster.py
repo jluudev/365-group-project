@@ -61,7 +61,7 @@ def attack_hero(hero_id: int, monster_id: int):
 
 
 # Die - /monster/die/{monster_id} (GET)
-@router.get("/die/{monster_id}")
+@router.post("/die/{monster_id}")
 def die(monster_id: int):
     sql_delete_monster = """
     WITH deleted_targeting AS (
