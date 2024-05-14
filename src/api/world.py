@@ -52,13 +52,15 @@ def view_heroes(world_id: int):
 
 # Get Quests - /world/get_quests/{world_id} (GET)
 @router.get("/get_quests/{world_id}")
-def get_quests():
-    return [
-            {
-                "dungeon_name": "string",
-                "level": "number",
-            }
-        ]
+def get_quests(world_id : int):
+    with db.connection() as connection:
+        # Fetch dungeon names and levels for the provided world_id
+        result = connection.execute(
+            sqlalchemy.text("SELECT name, level FROM dungeon WHERE world_id = :world_id"),
+            {"world_id": world_id}
+        )
+        dungeons = [{"dungeon_name": row[0], "level": row[1]} for row in result.fetchall()]
+    return dungeons
 
 # Create Hero - /world/create_hero/{world_id} (POST)
 @router.post("/create_hero/{world_id}")
