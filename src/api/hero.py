@@ -163,12 +163,24 @@ def die(hero_id: int):
 
 # Find Monsters - /hero/find_monsters/{dungeon_id}/ (GET)
 @router.get("/find_monsters/{dungeon_id}")
-def find_monsters():
-    return [
-        {
-            "id":"number",
-            "name" : "string",
-            "level": "number",
-            "power": "number",
-        }
-    ]
+def find_monsters(dungeon_id: int):
+    sql_to_execute = """
+    SELECT id, type AS name, level, health, power
+    FROM monster
+    WHERE dungeon_id = :dungeon_id AND monster.health > 0
+    """
+    with db.engine.begin() as connection:
+        monsters = connection.execute(sqlalchemy.text(sql_to_execute), {"dungeon_id": dungeon_id})
+
+    monster_list = []
+    for monster in monsters:
+        monster_list.append(
+            {
+                "id": monster.id,
+                "name" : monster.name,
+                "level": monster.level,
+                "health": monster.health,
+                "power": monster.power
+            }
+        )
+    return monster_list
