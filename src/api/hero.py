@@ -247,12 +247,13 @@ def hero_monster_interactions(hero_id: int):
         FROM targeting t
         JOIN monster m ON t.monster_id = m.id
         WHERE t.hero_id = :hero_id
+        GROUP BY t.hero_id, t.monster_id, m.type, m.level, m.health, m.power, t.timestamp
     ),
     battle_summary AS (
         SELECT
             hero_id,
             COUNT(DISTINCT monster_id) AS total_battles,
-            SUM(monster_defeated) AS monsters_defeated,
+            SUM(monster_defeated::int) AS monsters_defeated,
             SUM(damage_dealt) AS total_damage_dealt
         FROM hero_battles
         GROUP BY hero_id
