@@ -252,7 +252,7 @@ def hero_monster_interactions(hero_id: int):
         SELECT
             hero_id,
             COUNT(DISTINCT monster_id) AS total_battles,
-            SUM(monster_defeated) AS monsters_defeated,
+            SUM(monster_defeated::int) AS monsters_defeated,
             SUM(damage_dealt) AS total_damage_dealt
         FROM hero_battles
         GROUP BY hero_id
