@@ -421,3 +421,52 @@ This can occur if a monster is killed by a hero.
     "success": "boolean"
 }
 ```
+
+## 7. Complex Endpoints
+Complex meaning it does significantly more than just a straightforward create/update/delete/read from the database.
+
+### 7.1 Hero-Monster Interaction Report - `/hero/{hero_id}/monster_interactions` (GET)
+Provides detailed insights into a hero's interactions with monsters, including metrics such as the number of monsters defeated, total damage dealt, and detailed statistics for each battle.
+
+**Response**:
+```json
+{
+    "status": "boolean",
+    "hero_id": "number",
+    "total_battles": "number",
+    "monsters_defeated": "number",
+    "total_damage_dealt": "number",
+    "battle_details": [
+        {
+            "monster_id": "number",
+            "monster_type": "string",
+            "monster_level": "number",
+            "initial_health": "number",
+            "remaining_health": "number",
+            "damage_dealt": "number",
+            "monster_power": "number",
+            "battle_time": "timestamp",
+            "monster_defeated": "boolean"
+        }
+    ]
+}
+
+
+### 7.2 Leaderboard - `/leaderboard` (GET)
+Provides a leaderboard ranking guilds based on their total gold, the number of heroes, and the average power of their heroes.
+
+**Response**:
+```json
+{
+    "status": "boolean",
+    "leaderboard": [
+        {
+            "rank": "number",
+            "guild_id": "number",
+            "guild_name": "string",
+            "guild_gold": "number",
+            "hero_count": "number",
+            "avg_hero_power": "number"
+        }
+    ]
+}

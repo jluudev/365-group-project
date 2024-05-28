@@ -121,4 +121,50 @@ def send_party(guild_id: int, party: list[Hero], dungeon_name: str):
         else:
             return {"success": False, "message": "Hero not found or already in a dungeon"}
 
+@router.get("/leaderboard")
+def get_leaderboard():
+    sql_leaderboard = """
+    WITH guild_stats AS (
+        SELECT 
+            g.id AS guild_id,
+            g.name AS guild_name,
+            g.gold AS guild_gold,
+            COUNT(h.id) AS hero_count,
+            COALESCE(AVG(h.power), 0) AS avg_hero_power
+        FROM guild g
+        LEFT JOIN hero h ON g.id = h.guild_id
+        GROUP BY g.id, g.name, g.gold
+    ),
+    ranked_guilds AS (
+        SELECT
+            guild_id,
+            guild_name,
+            guild_gold,
+            hero_count,
+            avg_hero_power,
+            RANK() OVER (ORDER BY guild_gold DESC, avg_hero_power DESC, hero_count DESC) AS rank
+        FROM guild_stats
+    )
+    SELECT *
+    FROM ranked_guilds
+    ORDER BY rank;
+    """
+    with db.engine.begin() as connection:
+        leaderboard = connection.execute(sqlalchemy.text(sql_leaderboard)).fetchall()
+
+    response = {
+        "status": "success",
+        "leaderboard": [
+            {
+                "rank": row.rank,
+                "guild_id": row.guild_id,
+                "guild_name": row.guild_name,
+                "guild_gold": row.guild_gold,
+                "hero_count": row.hero_count,
+                "avg_hero_power": row.avg_hero_power
+            }
+            for row in leaderboard
+        ]
+    }
+    return response
 
