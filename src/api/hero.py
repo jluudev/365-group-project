@@ -253,7 +253,7 @@ def hero_monster_interactions(hero_id: int):
     ORDER BY hb.battle_time DESC;
     """
     with db.engine.begin() as connection:
-        interactions = db.execute(sqlalchemy.text(sql_monster_interactions), {"hero_id": hero_id}).fetchall()
+        interactions = connection.execute(sqlalchemy.text(sql_monster_interactions), {"hero_id": hero_id}).fetchall()
 
     if not interactions:
         raise HTTPException(status_code=404, detail="No interactions found for the specified hero")
