@@ -204,3 +204,79 @@ def find_monsters(dungeon_id: int):
             }
         )
     return monster_list
+
+@router.get("/{hero_id}/monster_interactions")
+def hero_monster_interactions(hero_id: int):
+    sql_monster_interactions = """
+    WITH hero_battles AS (
+        SELECT
+            t.hero_id,
+            t.monster_id,
+            m.type AS monster_type,
+            m.level AS monster_level,
+            m.health AS monster_health,
+            m.power AS monster_power,
+            t.timestamp AS battle_time,
+            CASE WHEN m.health <= 0 THEN 1 ELSE 0 END AS monster_defeated,
+            m.health AS remaining_health,
+            (m.health + SUM(COALESCE(t.damage, 0))) OVER (PARTITION BY t.monster_id) AS initial_health,
+            SUM(COALESCE(t.damage, 0)) OVER (PARTITION BY t.monster_id) AS damage_dealt
+        FROM targeting t
+        JOIN monster m ON t.monster_id = m.id
+        WHERE t.hero_id = :hero_id
+        GROUP BY t.hero_id, t.monster_id, m.type, m.level, m.health, m.power, t.timestamp
+    ),
+    battle_summary AS (
+        SELECT
+            hero_id,
+            COUNT(monster_id) AS total_battles,
+            SUM(monster_defeated) AS monsters_defeated,
+            SUM(damage_dealt) AS total_damage_dealt
+        FROM hero_battles
+        GROUP BY hero_id
+    )
+    SELECT
+        hb.hero_id,
+        hb.monster_id,
+        hb.monster_type,
+        hb.monster_level,
+        hb.initial_health,
+        hb.remaining_health,
+        hb.damage_dealt,
+        hb.monster_power,
+        hb.battle_time,
+        bs.total_battles,
+        bs.monsters_defeated,
+        bs.total_damage_dealt
+    FROM hero_battles hb
+    JOIN battle_summary bs ON hb.hero_id = bs.hero_id
+    ORDER BY hb.battle_time DESC;
+    """
+    with db.engine.begin() as connection:
+        interactions = db.execute(sqlalchemy.text(sql_monster_interactions), {"hero_id": hero_id}).fetchall()
+
+    if not interactions:
+        raise HTTPException(status_code=404, detail="No interactions found for the specified hero")
+
+    response = {
+        "status": "success",
+        "hero_id": interactions[0].hero_id,
+        "total_battles": interactions[0].total_battles,
+        "monsters_defeated": interactions[0].monsters_defeated,
+        "total_damage_dealt": interactions[0].total_damage_dealt,
+        "battle_details": [
+            {
+                "monster_id": row.monster_id,
+                "monster_type": row.monster_type,
+                "monster_level": row.monster_level,
+                "initial_health": row.initial_health,
+                "remaining_health": row.remaining_health,
+                "damage_dealt": row.damage_dealt,
+                "monster_power": row.monster_power,
+                "battle_time": row.battle_time,
+                "monster_defeated": bool(row.monster_defeated)
+            }
+            for row in interactions
+        ]
+    }
+    return response
