@@ -242,8 +242,8 @@ def hero_monster_interactions(hero_id: int):
             m.power AS monster_power,
             t.timestamp AS battle_time,
             CASE WHEN m.health <= 0 THEN 1 ELSE 0 END AS monster_defeated,
-            SUM(t.damage) OVER (PARTITION BY t.monster_id) + m.health AS initial_health,
-            SUM(t.damage) AS damage_dealt
+            SUM(t.damage) OVER (PARTITION BY t.monster_id) + FIRST_VALUE(m.health) OVER (PARTITION BY t.monster_id ORDER BY t.timestamp DESC) AS initial_health,
+            SUM(t.damage) OVER (PARTITION BY t.monster_id ORDER BY t.timestamp DESC) AS damage_dealt
         FROM targeting t
         JOIN monster m ON t.monster_id = m.id
         WHERE t.hero_id = :hero_id
