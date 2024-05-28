@@ -241,9 +241,9 @@ def hero_monster_interactions(hero_id: int):
             m.health AS monster_remaining_health,
             m.power AS monster_power,
             t.timestamp AS battle_time,
-            CASE WHEN m.health <= 0 THEN 1 ELSE 0 END AS monster_defeated,
             SUM(t.damage) OVER (PARTITION BY t.monster_id ORDER BY t.timestamp RANGE BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) + FIRST_VALUE(m.health) OVER (PARTITION BY t.monster_id ORDER BY t.timestamp ASC ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS initial_health,
-            SUM(t.damage) OVER (PARTITION BY t.monster_id ORDER BY t.timestamp ASC ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS damage_dealt
+            SUM(t.damage) OVER (PARTITION BY t.monster_id ORDER BY t.timestamp ASC ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS damage_dealt,
+            CASE WHEN m.health <= 0 THEN 1 ELSE 0 END AS monster_defeated
         FROM targeting t
         JOIN monster m ON t.monster_id = m.id
         WHERE t.hero_id = :hero_id
@@ -253,7 +253,7 @@ def hero_monster_interactions(hero_id: int):
         SELECT
             hero_id,
             COUNT(DISTINCT monster_id) AS total_battles,
-            SUM(monster_defeated::int) AS monsters_defeated,
+            SUM(monster_defeated) AS monsters_defeated,
             SUM(damage_dealt) AS total_damage_dealt
         FROM hero_battles
         GROUP BY hero_id
@@ -297,7 +297,7 @@ def hero_monster_interactions(hero_id: int):
                 "damage_dealt": row.damage_dealt,
                 "monster_power": row.monster_power,
                 "battle_time": row.battle_time,
-                "monster_defeated": bool(row.monster_defeated)
+                "monster_defeated": bool(row.monster_remaining_health <= 0)
             }
             for row in interactions
         ]
