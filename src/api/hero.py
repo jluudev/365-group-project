@@ -296,7 +296,7 @@ def hero_monster_interactions(hero_id: int):
                 "damage_dealt": row.damage_dealt,
                 "monster_power": row.monster_power,
                 "battle_time": row.battle_time,
-                "monster_defeated": bool(row.monster_remaining_health <= 0)
+                "monster_defeated": bool(row.remaining_health <= 0)
             }
             for row in interactions
         ]
