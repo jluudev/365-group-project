@@ -105,13 +105,37 @@ def accept_request(hero_id: int, guild_name: str):
 @router.post("/attack_monster/{hero_id}")
 def attack_monster(monster_id: int, hero_id: int):
     with db.engine.begin() as connection:
-        connection.execute(sqlalchemy.text
-        ("""
-        UPDATE monster
-        SET health = (SELECT health FROM monster WHERE id = :monster_id) - 
-        (SELECT power FROM hero WHERE id = :hero_id)
-        WHERE id = :monster_id
-        """), [{"monster_id": monster_id, "hero_id": hero_id}])
+        # Lock the rows for update to handle concurrency
+        result = connection.execute(sqlalchemy.text("""
+            SELECT m.health AS monster_health, h.power AS hero_power
+            FROM monster m
+            JOIN hero h ON h.id = :hero_id
+            WHERE m.id = :monster_id
+            FOR UPDATE
+        """), {"monster_id": monster_id, "hero_id": hero_id}).fetchone()
+
+        if not result:
+            raise HTTPException(status_code=404, detail="Hero or Monster not found")
+
+        monster_health = result.monster_health
+        hero_power = result.hero_power
+
+        # Calculate the new health of the monster
+        new_health = monster_health - hero_power
+        damage = hero_power
+
+        # Update the health of the monster
+        connection.execute(sqlalchemy.text("""
+            UPDATE monster
+            SET health = :new_health
+            WHERE id = :monster_id
+        """), {"new_health": new_health, "monster_id": monster_id})
+
+        # Log the attack in the targeting table
+        connection.execute(sqlalchemy.text("""
+            INSERT INTO targeting (hero_id, monster_id, damage, timestamp)
+            VALUES (:hero_id, :monster_id, :damage, CURRENT_TIMESTAMP)
+        """), {"hero_id": hero_id, "monster_id": monster_id, "damage": damage})
 
     return {
         "success": "OK"
@@ -214,13 +238,12 @@ def hero_monster_interactions(hero_id: int):
             t.monster_id,
             m.type AS monster_type,
             m.level AS monster_level,
-            m.health AS monster_health,
+            m.health AS monster_remaining_health,
             m.power AS monster_power,
             t.timestamp AS battle_time,
             CASE WHEN m.health <= 0 THEN 1 ELSE 0 END AS monster_defeated,
-            m.health AS remaining_health,
-            (m.health + SUM(COALESCE(t.damage, 0))) OVER (PARTITION BY t.monster_id) AS initial_health,
-            SUM(COALESCE(t.damage, 0)) OVER (PARTITION BY t.monster_id) AS damage_dealt
+            SUM(t.damage) OVER (PARTITION BY t.monster_id) + m.health AS initial_health,
+            SUM(t.damage) AS damage_dealt
         FROM targeting t
         JOIN monster m ON t.monster_id = m.id
         WHERE t.hero_id = :hero_id
@@ -241,7 +264,7 @@ def hero_monster_interactions(hero_id: int):
         hb.monster_type,
         hb.monster_level,
         hb.initial_health,
-        hb.remaining_health,
+        hb.monster_remaining_health AS remaining_health,
         hb.damage_dealt,
         hb.monster_power,
         hb.battle_time,
