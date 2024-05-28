@@ -247,7 +247,6 @@ def hero_monster_interactions(hero_id: int):
         FROM targeting t
         JOIN monster m ON t.monster_id = m.id
         WHERE t.hero_id = :hero_id
-        GROUP BY t.hero_id, t.monster_id, m.type, m.level, m.health, m.power, t.timestamp
     ),
     battle_summary AS (
         SELECT
