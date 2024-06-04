@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from src.api import auth
 import sqlalchemy
+from sqlalchemy import func
 from src import database as db
 
 router = APIRouter(
@@ -257,7 +258,7 @@ def hero_monster_interactions(hero_id: int):
         hb.monster_remaining_health AS remaining_health,
         hb.damage_dealt,
         hb.monster_power,
-        hb.battle_time,
+        to_char(hb.battle_time, 'YYYY-MM-DD HH24:MI:SS') AS battle_time,  -- Convert timestamp to string format
         bs.total_battles,
         bs.monsters_defeated,
         bs.total_damage_dealt
