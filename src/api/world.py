@@ -64,9 +64,6 @@ def view_heroes(world_id: int):
             })
 
     return heroes
-    # return {
-    #     "success": True
-    # }
 
 # Get Quests - /world/get_quests/{world_id} (GET)
 @router.get("/get_quests/{world_id}")
