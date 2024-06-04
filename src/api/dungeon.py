@@ -84,32 +84,34 @@ def create_monster(dungeon_id: int, monster: Monster):
 def collect_bounty(guild_id: int, dungeon_id: int):
     sql_to_execute = sqlalchemy.text("""
     WITH monster_count AS (
-    SELECT COUNT(*) AS count
-    FROM monster
-    WHERE dungeon_id = :dungeon_id AND health > 0
+        SELECT COUNT(*) AS count
+        FROM monster
+        WHERE dungeon_id = :dungeon_id AND health > 0
     ),
     guild_update AS (
-    UPDATE guild
-    SET gold = gold + (SELECT gold_reward FROM dungeon WHERE id = :dungeon_id)
-    WHERE id = :guild_id
-    AND (SELECT count FROM monster_count) = 0
-    RETURNING gold
+        UPDATE guild
+        SET gold = gold + (SELECT gold_reward FROM dungeon WHERE id = :dungeon_id)
+        WHERE id = :guild_id
+        AND (SELECT count FROM monster_count) = 0
+        RETURNING gold
     ),
     dungeon_update AS (
-    UPDATE dungeon
-    SET status = 'completed'
-    WHERE id = :dungeon_id
+        UPDATE dungeon
+        SET status = 'completed'
+        WHERE id = :dungeon_id
     ),
     hero_update AS (
-    UPDATE hero
-    SET dungeon_id = NULL
-    WHERE dungeon_id = :dungeon_id AND health > 0
-    );
+        UPDATE hero
+        SET dungeon_id = NULL
+        WHERE dungeon_id = :dungeon_id AND health > 0
+    )
+    SELECT * FROM guild_update, dungeon_update, hero_update;
     """)
     with db.engine.begin() as connection:
         result = connection.execute(sql_to_execute, {"dungeon_id": dungeon_id, "guild_id": guild_id})
         if result.rowcount > 0:
-            return {"success": True, "gold": result.fetchone()[0]}
+            gold = result.fetchone()[0]
+            return {"success": True, "gold": gold}
         else:
             return {"success": False, "message": "Failed to collect bounty"}
 
