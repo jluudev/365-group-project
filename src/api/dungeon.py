@@ -1,8 +1,6 @@
-from fastapi import APIRouter, Depends
-from enum import Enum
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from src.api import auth
-
 import sqlalchemy
 from src import database as db
 
@@ -11,8 +9,6 @@ router = APIRouter(
     tags=["dungeon"],
     dependencies=[Depends(auth.get_api_key)],
 )
-
-# Endpoint
 
 # Models
 class Dungeon(BaseModel):
@@ -30,14 +26,27 @@ class Monster(BaseModel):
 
 class Hero(BaseModel):
     hero_name: str
+    level: int
+    power: int
+    health: int
 
-# Create Dungeon - /dungeon/create_dungeon/{world_id} (POST)
-@router.post("/create_dungeon/{world_id}")
+class SuccessResponse(BaseModel):
+    success: bool
+    message: str = None
+
+class GoldResponse(BaseModel):
+    success: bool
+    gold: int = None
+    message: str = None
+
+# Endpoints
+
+@router.post("/create_dungeon/{world_id}", response_model=SuccessResponse)
 def create_dungeon(world_id: int, dungeon: Dungeon):
-    sql_to_execute = """
-    INSERT INTO dungeon (name, level, player_capacity, monster_capacity, reward, world_id)
+    sql_to_execute = sqlalchemy.text("""
+    INSERT INTO dungeon (name, level, party_capacity, monster_capacity, gold_reward, world_id)
     VALUES (:name, :level, :player_capacity, :monster_capacity, :reward, :world_id);
-    """
+    """)
     with db.engine.begin() as connection:
         result = connection.execute(sql_to_execute, {
             "name": dungeon.dungeon_name,
@@ -50,32 +59,29 @@ def create_dungeon(world_id: int, dungeon: Dungeon):
         if result.rowcount > 0:
             return {"success": True}
         else:
-            return {"success": False}
+            return {"success": False, "message": "Failed to create dungeon"}
 
-# Create Monster - /dungeon/create_monster/{dungeon_id} (POST)
-@router.post("/create_monster/{dungeon_id}")
-def create_monster(dungeon_id: int, monsters: Monster):
-    sql_to_execute = """
+@router.post("/create_monster/{dungeon_id}", response_model=SuccessResponse)
+def create_monster(dungeon_id: int, monster: Monster):
+    sql_to_execute = sqlalchemy.text("""
     INSERT INTO monster (type, health, dungeon_id, power, level)
     VALUES (:type, :health, :dungeon_id, :power, :level);
-    """
+    """)
     with db.engine.begin() as connection:
         result = connection.execute(sql_to_execute, {
-            "type": monsters.type,
-            "health": monsters.health,
+            "type": monster.type,
+            "health": monster.health,
             "dungeon_id": dungeon_id,
-            "power": monsters.power,
-            "level": monsters.level
+            "power": monster.power,
+            "level": monster.level
         })
+        if result.rowcount > 0:
+            return {"success": True}
+        else:
+            return {"success": False, "message": "Failed to create monster"}
 
-    return {
-        "success": True
-    }
-
-# Collect Bounty - /dungeon/collect_bounty/{guild_id} (POST)
-@router.post("/collect_bounty/{guild_id}")
+@router.post("/collect_bounty/{guild_id}", response_model=GoldResponse)
 def collect_bounty(guild_id: int, dungeon_id: int):
-    # Only collect bounty if no monsters are alive (no monsters with that dungeon_id)
     sql_to_execute = sqlalchemy.text("""
     WITH monster_count AS (
     SELECT COUNT(*) AS count
@@ -83,7 +89,7 @@ def collect_bounty(guild_id: int, dungeon_id: int):
     WHERE dungeon_id = :dungeon_id AND health > 0
     )
     UPDATE guild
-    SET gold = gold + (SELECT gold_reward FROM dungeon WHERE id = :dungeon_id)
+    SET gold = gold + (SELECT reward FROM dungeon WHERE id = :dungeon_id)
     WHERE id = :guild_id
     AND (SELECT count FROM monster_count) = 0
     RETURNING gold;
@@ -91,13 +97,11 @@ def collect_bounty(guild_id: int, dungeon_id: int):
     with db.engine.begin() as connection:
         result = connection.execute(sql_to_execute, {"dungeon_id": dungeon_id, "guild_id": guild_id})
         if result.rowcount > 0:
-            # Return the amount of gold collected
-            return {"gold": result.fetchone()[0]}
+            return {"success": True, "gold": result.fetchone()[0]}
         else:
             return {"success": False, "message": "Failed to collect bounty"}
 
-# Assess Damage - /dungeon/assess_damage/{dungeon_id} (GET)
-@router.get("/assess_damage/{dungeon_id}")
+@router.get("/assess_damage/{dungeon_id}", response_model=list[Hero])
 def assess_damage(guild_id: int, dungeon_id: int):
     sql_to_execute = """
     SELECT name, level, power, health
@@ -107,14 +111,7 @@ def assess_damage(guild_id: int, dungeon_id: int):
     with db.engine.begin() as connection:
         heroes = connection.execute(sqlalchemy.text(sql_to_execute), {"guild_id": guild_id, "dungeon_id": dungeon_id})
 
-    returning_heroes = []
-    for hero in heroes:
-        returning_heroes.append(
-            {
-                "hero_name": hero.name,
-                "level": hero.level,
-                "power": hero.power,
-                "health": hero.health
-            }
-        )
-    return returning_heroes
+    return [
+        Hero(hero_name=hero.name, level=hero.level, power=hero.power, health=hero.health)
+        for hero in heroes
+    ]

@@ -1,8 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
-from enum import Enum
 from pydantic import BaseModel
 from src.api import auth
-
 import sqlalchemy
 from src import database as db
 
@@ -12,7 +10,7 @@ router = APIRouter(
     dependencies=[Depends(auth.get_api_key)],
 )
 
-# Model
+# Models
 class Hero(BaseModel):
     hero_name: str
 
@@ -21,29 +19,49 @@ class Guild(BaseModel):
     max_capacity: int
     gold: int
 
-# Endpoint
+class SuccessResponse(BaseModel):
+    success: bool
+    message: str = None
 
-# Create Guild - /world/create_guild/{world_id} (POST)
-@router.post("/create_guild/{world_id}")
+class HeroDetails(BaseModel):
+    hero_name: str
+    power: int
+    health: int
+    level: int
+
+class LeaderboardEntry(BaseModel):
+    rank: int
+    guild_id: int
+    guild_name: str
+    guild_gold: int
+    hero_count: int
+    avg_hero_power: float
+
+class LeaderboardResponse(BaseModel):
+    status: str
+    leaderboard: list[LeaderboardEntry]
+
+# Endpoints
+
+@router.post("/create_guild/{world_id}", response_model=SuccessResponse)
 def create_guild(world_id: int, guild: Guild):
-    sql_to_execute = """
-    INSERT INTO guild (name, max_capacity, gold, world_id)
+    sql_to_execute = sqlalchemy.text("""
+    INSERT INTO guild (name, player_capacity, gold, world_id)
     VALUES (:name, :max_capacity, :gold, :world_id);
-    """
+    """)
     with db.engine.begin() as connection:
-        connection.execute(sql_to_execute, {
+        result = connection.execute(sql_to_execute, {
             "name": guild.guild_name,
             "max_capacity": guild.max_capacity,
             "gold": guild.gold,
             "world_id": world_id
         })
+        if result.rowcount > 0:
+            return {"success": True}
+        else:
+            return {"success": False, "message": "Failed to create guild"}
 
-    return {
-        "success": True
-    }
-
-# Recruit Hero - /guild/recruit_hero/{guild_id} (POST)
-@router.post("/recruit_hero/{guild_id}")
+@router.post("/recruit_hero/{guild_id}", response_model=SuccessResponse)
 def recruit_hero(guild_id: int, hero: Hero):
     sql_to_execute = sqlalchemy.text("""
     INSERT INTO recruitment (hero_id, guild_id, status, request_date)
@@ -51,7 +69,6 @@ def recruit_hero(guild_id: int, hero: Hero):
     FROM hero 
     WHERE name = :hero_name AND guild_id IS NULL AND world_id = (SELECT world_id FROM guild WHERE id = :guild_id);
     """)
-
     with db.engine.begin() as connection:
         result = connection.execute(sql_to_execute, {'hero_name': hero.hero_name, 'guild_id': guild_id})
         if result.rowcount > 0:
@@ -59,8 +76,7 @@ def recruit_hero(guild_id: int, hero: Hero):
         else:
             return {"success": False, "message": "Hero not found or already in a guild"}
 
-# Check Available Heroes - /guild/available_heroes/{guild_id} (GET)
-@router.get("/available_heroes/{guild_id}")
+@router.get("/available_heroes/{guild_id}", response_model=list[HeroDetails])
 def available_heroes(guild_id: int):
     with db.engine.begin() as connection:
         result = connection.execute(
@@ -71,13 +87,12 @@ def available_heroes(guild_id: int):
             """), {"guild_id": guild_id}
         )
         heroes = [
-            {"hero_name": row[0], "power": row[1], "health": row[2], "level": row[3]} 
+            HeroDetails(hero_name=row[0], power=row[1], health=row[2], level=row[3]) 
             for row in result.fetchall()
         ]
     return heroes
 
-# Remove Dead Heroes - /guild/remove_heroes/{guild_id} (POST)
-@router.post("/remove_heroes/{guild_id}")
+@router.post("/remove_heroes/{guild_id}", response_model=SuccessResponse)
 def remove_heroes(guild_id: int, heroes: list[Hero]):
     hero_names = [hero.hero_name for hero in heroes]
     with db.engine.begin() as connection:
@@ -92,17 +107,15 @@ def remove_heroes(guild_id: int, heroes: list[Hero]):
         else:
             return {"success": False, "message": "No dead heroes found"}
 
-# Send Party - /guild/send_party/{guild_id} (POST)
-@router.post("/send_party/{guild_id}")
+@router.post("/send_party/{guild_id}", response_model=SuccessResponse)
 def send_party(guild_id: int, party: list[Hero], dungeon_name: str):
-    # Check if the guild exists
     guild_query = sqlalchemy.text("SELECT * FROM guild WHERE id = :guild_id FOR UPDATE")
     with db.engine.begin() as connection:
         guild = connection.execute(guild_query, {"guild_id": guild_id}).fetchone()
         if not guild:
             raise HTTPException(status_code=404, detail="Guild not found")
         
-        # Update hero dungeon_id
+        all_success = True
         for hero in party:
             update_hero = sqlalchemy.text("""
             UPDATE hero
@@ -110,18 +123,20 @@ def send_party(guild_id: int, party: list[Hero], dungeon_name: str):
             WHERE name = :hero_name AND guild_id = :guild_id
             """)
             result = connection.execute(update_hero, {"hero_name": hero.hero_name, "guild_id": guild_id, "dungeon_name": dungeon_name})
-            
-        if result.rowcount > 0:
+            if result.rowcount == 0:
+                all_success = False
+        
+        if all_success:
             connection.execute(sqlalchemy.text("""
-                                            UPDATE dungeon
-                                            SET status = 'closed'
-                                            WHERE name = :dungeon_name"""),
-                                            {"dungeon_name": dungeon_name})
+                UPDATE dungeon
+                SET status = 'closed'
+                WHERE name = :dungeon_name
+            """), {"dungeon_name": dungeon_name})
             return {"success": True}
         else:
-            return {"success": False, "message": "Hero not found or already in a dungeon"}
+            return {"success": False, "message": "One or more heroes not found or already in a dungeon"}
 
-@router.get("/leaderboard")
+@router.get("/leaderboard", response_model=LeaderboardResponse)
 def get_leaderboard():
     sql_leaderboard = """
     WITH guild_stats AS (
@@ -152,19 +167,17 @@ def get_leaderboard():
     with db.engine.begin() as connection:
         leaderboard = connection.execute(sqlalchemy.text(sql_leaderboard)).fetchall()
 
-    response = {
-        "status": "success",
-        "leaderboard": [
-            {
-                "rank": row.rank,
-                "guild_id": row.guild_id,
-                "guild_name": row.guild_name,
-                "guild_gold": row.guild_gold,
-                "hero_count": row.hero_count,
-                "avg_hero_power": row.avg_hero_power
-            }
+    return LeaderboardResponse(
+        status="success",
+        leaderboard=[
+            LeaderboardEntry(
+                rank=row.rank,
+                guild_id=row.guild_id,
+                guild_name=row.guild_name,
+                guild_gold=row.guild_gold,
+                hero_count=row.hero_count,
+                avg_hero_power=row.avg_hero_power
+            )
             for row in leaderboard
         ]
-    }
-    return response
-
+    )
