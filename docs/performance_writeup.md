@@ -13,6 +13,9 @@ Rows for each table:
 
 Our service would probably scale somewhat like this since we don't expect the number of worlds to be that many compared to the others. For example, thinking of a well-known game like World of Warcraft, there are only 255 active servers, and that is a game with millions of players. We expect the guilds table to have the second least as we expect that there would be multiple heroes in a guild. We expect there to be a lot of dungeons, monsters, and heroes however which should make up most of the rows. We expect the targeting table to have a lot as well.
 
+Link to fake data inserting:
+`https://github.com/jluudev/arthurslastcrusade/blob/v5/populate.py`
+
 ## Performance results of hitting endpoints
 
 ### World Endpoints
