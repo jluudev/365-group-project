@@ -102,3 +102,10 @@ def age_hero(hero_id: int):
             return {"success": True}
         else:
             return {"success": False, "message": "Hero not found"}
+        
+@router.get("/get_worlds", response_model=list[dict])
+def get_worlds():
+    with db.engine.begin() as connection:
+        result = connection.execute(sqlalchemy.text("SELECT id, name FROM world"))
+        worlds = [{"id": row.id, "name": row.name} for row in result.fetchall()]
+    return worlds
