@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from enum import Enum
 from pydantic import BaseModel
 from src.api import auth
@@ -96,6 +96,19 @@ def create_hero(world_id: int, hero: Hero):
     INSERT INTO hero (name, level, age, power, health, xp, world_id)
     VALUES (:name, :level, :age, :power, :health, :xp, :world_id)
     """
+    if hero.level < 0:
+        raise HTTPException(status_code = 404, deatil = "Invalid Hero Level")
+    if hero.age < 0:
+        raise HTTPException(status_code = 404, detail = "Invalid Hero Age")
+    if hero.power < 0:
+        raise HTTPException(status_code = 404, detail = "Invalid Hero Power")
+    if hero.health < 0:
+        raise HTTPException(status_code = 404, detail = "Invalid Hero Health")
+    if hero.xp < 0:
+        raise HTTPException(status_code = 404, detail = "Invalid Hero xp")
+    if world_id < 0:
+        raise HTTPException(status_code = 404, detail = "Invalid World Id")
+
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text(sql_to_execute), {
             "name": hero.hero_name,
