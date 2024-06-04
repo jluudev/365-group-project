@@ -74,6 +74,17 @@ def create_dungeon(world_id: int, dungeon: Dungeon):
     VALUES (:name, :level, :player_capacity, :monster_capacity, :reward, :world_id);
     """
     with db.engine.begin() as connection:
+        if dungeon.dungeon_level < 0:
+            raise HTTPException("Invalid Dungeon Level")
+        if dungeon.player_capacity < 0:
+            raise HTTPException("Invalid Player Capacity")
+        if dungeon.monster_capacity < 0:
+            raise HTTPException("Invalid Monster Capacity")
+        if dungeon.reward < 0:
+            raise HTTPException("Invalid Reward")
+        if world_id < 0:
+            raise HTTPException("Invalid World Id")
+
         result = connection.execute(sql_to_execute, {
             "name": dungeon.dungeon_name,
             "level": dungeon.dungeon_level,
