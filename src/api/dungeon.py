@@ -108,8 +108,20 @@ def create_monster(dungeon_id: int, monsters: Monster):
     '''
 
     sql_to_execute = """
+    WITH monster_count AS (
+        SELECT COUNT(*) AS current_monster_count
+        FROM monster
+        WHERE dungeon_id = :dungeon_id
+    ),
+    capacity_check AS (
+        SELECT monster_capacity
+        FROM dungeon
+        WHERE id = :dungeon_id
+    )
     INSERT INTO monster (type, health, dungeon_id, power, level)
-    VALUES (:type, :health, :dungeon_id, :power, :level);
+    SELECT :type, :health, :dungeon_id, :power, :level
+    FROM monster_count, capacity_check
+    WHERE monster_count.current_monster_count < capacity_check.monster_capacity;
     """
     if monsters.health < 0:
         raise HTTPException(status_code = 400, detail = "Invalid Monster Health")
@@ -121,17 +133,17 @@ def create_monster(dungeon_id: int, monsters: Monster):
         raise HTTPException(status_code = 400, detail = "Invalid Monster Level")
 
     with db.engine.begin() as connection:
-        result = connection.execute(sql_to_execute, {
+        result = connection.execute(sqlalchemy.text(sql_to_execute), {
             "type": monsters.type,
             "health": monsters.health,
             "dungeon_id": dungeon_id,
             "power": monsters.power,
             "level": monsters.level
         })
-
-    return {
-        "success": True
-    }
+        if result.rowcount > 0:
+            return {"success": True}
+        else:
+            return {"success": False, "message": "Dungeon at max monster capacity"}
 
 # Collect Bounty - /dungeon/collect_bounty/{guild_id} (POST)
 @router.post("/collect_bounty/{guild_id}")
