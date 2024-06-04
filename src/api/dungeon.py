@@ -87,12 +87,24 @@ def collect_bounty(guild_id: int, dungeon_id: int):
     SELECT COUNT(*) AS count
     FROM monster
     WHERE dungeon_id = :dungeon_id AND health > 0
-    )
+    ),
+    guild_update AS (
     UPDATE guild
     SET gold = gold + (SELECT gold_reward FROM dungeon WHERE id = :dungeon_id)
     WHERE id = :guild_id
     AND (SELECT count FROM monster_count) = 0
-    RETURNING gold;
+    RETURNING gold
+    ),
+    dungeon_update AS (
+    UPDATE dungeon
+    SET status = 'completed'
+    WHERE id = :dungeon_id
+    ),
+    hero_update AS (
+    UPDATE hero
+    SET dungeon_id = NULL
+    WHERE dungeon_id = :dungeon_id AND health > 0
+    );
     """)
     with db.engine.begin() as connection:
         result = connection.execute(sql_to_execute, {"dungeon_id": dungeon_id, "guild_id": guild_id})
