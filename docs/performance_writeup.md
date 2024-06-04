@@ -13,6 +13,9 @@ Rows for each table:
 
 Our service would probably scale somewhat like this since we don't expect the number of worlds to be that many compared to the others. For example, thinking of a well-known game like World of Warcraft, there are only 255 active servers, and that is a game with millions of players. We expect the guilds table to have the second least as we expect that there would be multiple heroes in a guild. We expect there to be a lot of dungeons, monsters, and heroes however which should make up most of the rows. We expect the targeting table to have a lot as well.
 
+Link to fake data inserting:
+`https://github.com/jluudev/arthurslastcrusade/blob/v5/populate.py`
+
 ## Performance results of hitting endpoints
 
 ### World Endpoints
@@ -31,7 +34,7 @@ Our service would probably scale somewhat like this since we don't expect the nu
 - **Create Monster**
   - **POST** `/dungeon/create_monster/{dungeon_id}` - 3.06 ms
 - **Collect Bounty**
-  - **POST** `/dungeon/collect_bounty/{guild_id}`
+  - **POST** `/dungeon/collect_bounty/{guild_id}` - 5.21 ms
 - **Assess Damage**
   - **GET** `/dungeon/assess_damage/{dungeon_id}`
 
@@ -43,7 +46,7 @@ Our service would probably scale somewhat like this since we don't expect the nu
 - **View Pending Requests**
   - **GET** `/hero/view_pending_requests/{hero_id}`
 - **Accept Request**
-  - **POST** `/hero/accept_request/{hero_id}`
+  - **POST** `/hero/accept_request/{hero_id}` - 4.56 ms
 - **Attack Monster**
   - **POST** `/hero/attack_monster/{hero_id}` - 8.43 ms
 - **Check Health**
@@ -73,9 +76,9 @@ Our service would probably scale somewhat like this since we don't expect the nu
 - **Available Heroes**
   - **GET** `/guild/available_heroes/{guild_id}`
 - **Remove Heroes**
-  - **POST** `/guild/remove_heroes/{guild_id}`
+  - **POST** `/guild/remove_heroes/{guild_id}` 4.21 ms
 - **Send Party**
-  - **POST** `/guild/send_party/{guild_id}`
+  - **POST** `/guild/send_party/{guild_id}` 3.26 ms
 - **Get Leaderboard**
   - **GET** `/guild/leaderboard` - 497.23 ms
 
