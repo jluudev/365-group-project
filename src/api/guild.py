@@ -154,13 +154,13 @@ def send_party(guild_id: int, party: list[Hero], dungeon_name: str):
             raise HTTPException(status_code=404, detail="Guild not found")
         
         # Update hero dungeon_id
-        for hero in party:
-            update_hero = sqlalchemy.text("""
-            UPDATE hero
-            SET dungeon_id = (SELECT id FROM dungeon WHERE name = :dungeon_name AND status = 'open')
-            WHERE name = :hero_name AND guild_id = :guild_id
-            """)
-            result = connection.execute(update_hero, {"hero_name": hero.hero_name, "guild_id": guild_id, "dungeon_name": dungeon_name})
+        hero_names = [hero.hero_name for hero in party]
+        update_hero = sqlalchemy.text("""
+        UPDATE hero
+        SET dungeon_id = (SELECT id FROM dungeon WHERE name = :dungeon_name AND status = 'open')
+        WHERE name IN :hero_names AND guild_id = :guild_id
+        """)
+        result = connection.execute(update_hero, {"hero_names": tuple(hero_names), "guild_id": guild_id, "dungeon_name": dungeon_name})
             
         if result.rowcount > 0:
             connection.execute(sqlalchemy.text("""
