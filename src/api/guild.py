@@ -14,9 +14,23 @@ router = APIRouter(
 
 # Model
 class Hero(BaseModel):
+    '''
+    Attributes -
+        hero_name: str
+            the name of the hero
+    '''
     hero_name: str
 
 class Guild(BaseModel):
+    '''
+    Attributes -
+        guild_name: str
+            the name of the guild
+        max_capacity: int
+            how many heroes max that can be recruited by the guild
+        gold: int
+            how much gold the guild has
+    '''
     guild_name: str
     max_capacity: int
     gold: int
@@ -26,6 +40,12 @@ class Guild(BaseModel):
 # Create Guild - /world/create_guild/{world_id} (POST)
 @router.post("/create_guild/{world_id}")
 def create_guild(world_id: int, guild: Guild):
+    '''
+    Creates a guild at specified world_id
+    Takes: world_id (int), Guild (guild_name, max_capacity, gold)
+    Returns: boolean on success or failure of guild creation
+    '''
+
     sql_to_execute = """
     INSERT INTO guild (name, max_capacity, gold, world_id)
     VALUES (:name, :max_capacity, :gold, :world_id);
@@ -45,6 +65,12 @@ def create_guild(world_id: int, guild: Guild):
 # Recruit Hero - /guild/recruit_hero/{guild_id} (POST)
 @router.post("/recruit_hero/{guild_id}")
 def recruit_hero(guild_id: int, hero: Hero):
+    '''
+    Recruits a hero to a specified guild_id
+    Takes: guild_id (int), Hero (hero_name)
+    Returns: boolean on success or failure of recruitment
+    '''
+
     sql_to_execute = sqlalchemy.text("""
     INSERT INTO recruitment (hero_id, guild_id, status, request_date)
     SELECT id, :guild_id, 'pending', now() 
@@ -62,6 +88,12 @@ def recruit_hero(guild_id: int, hero: Hero):
 # Check Available Heroes - /guild/available_heroes/{guild_id} (GET)
 @router.get("/available_heroes/{guild_id}")
 def available_heroes(guild_id: int):
+    '''
+    Get query to view all available heroes
+    Takes: guild_id (int)
+    Returns: list[Hero]
+    '''
+
     with db.engine.begin() as connection:
         result = connection.execute(
             sqlalchemy.text("""
@@ -79,6 +111,12 @@ def available_heroes(guild_id: int):
 # Remove Dead Heroes - /guild/remove_heroes/{guild_id} (POST)
 @router.post("/remove_heroes/{guild_id}")
 def remove_heroes(guild_id: int, heroes: list[Hero]):
+    '''
+    Removes a hero from a guild
+    Takes: guild_id (int), list[Hero]
+    Returns: boolean on success or failure of removals
+    '''
+
     hero_names = [hero.hero_name for hero in heroes]
     with db.engine.begin() as connection:
         result = connection.execute(
@@ -95,6 +133,12 @@ def remove_heroes(guild_id: int, heroes: list[Hero]):
 # Send Party - /guild/send_party/{guild_id} (POST)
 @router.post("/send_party/{guild_id}")
 def send_party(guild_id: int, party: list[Hero], dungeon_name: str):
+    '''
+    Sends a party out to a dungeon
+    Takes: guild_id (int), list[Hero], dungeon_name (TEXT)
+    Returns: boolean on success or failure
+    '''
+
     # Check if the guild exists
     guild_query = sqlalchemy.text("SELECT * FROM guild WHERE id = :guild_id FOR UPDATE")
     with db.engine.begin() as connection:
@@ -123,6 +167,19 @@ def send_party(guild_id: int, party: list[Hero], dungeon_name: str):
 
 @router.get("/leaderboard")
 def get_leaderboard():
+    '''
+    Get query that returns a leaderboard of the top guilds
+    Takes:
+    Returns: json response
+        - boolean of success or failure
+        - Leaderboard (rank (int),
+                    guild_id (int),
+                    guild_name (TEXT),
+                    guild_gold (int),
+                    hero_count (int),
+                    avg_hero_power (float))
+    '''
+
     sql_leaderboard = """
     WITH guild_stats AS (
         SELECT 

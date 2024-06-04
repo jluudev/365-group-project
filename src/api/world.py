@@ -14,6 +14,20 @@ router = APIRouter(
 
 # Model
 class Hero(BaseModel):
+    '''
+    Attributes -
+        hero_name: str
+            name of the hero
+        classType: str
+            the specialization of the hero
+        level: int
+        age: int
+            how old the hero is
+        power: int
+            how much damage the hero does
+        health: int
+        xp: int
+    '''
     hero_name: str
     classType: str
     level: int
@@ -27,6 +41,11 @@ class Hero(BaseModel):
 # View Heroes - /world/view_heroes/{world_id} (GET)
 @router.get("/view_heroes/{world_id}")
 def view_heroes(world_id: int):
+    '''
+    Returns all heroes in the selected world
+    Takes: world_id (int)
+    Returns: list[Hero]
+    '''
 
     heroes = []
     with db.engine.begin() as connection:
@@ -53,6 +72,12 @@ def view_heroes(world_id: int):
 # Get Quests - /world/get_quests/{world_id} (GET)
 @router.get("/get_quests/{world_id}")
 def get_quests(world_id : int):
+    '''
+    Finds all dungeons that can be raided
+    Takes: world_id (int)
+    Returns: list[Dungeon]
+    '''
+
     with db.engine.connect() as connection:
         # Fetch dungeon names and levels for the provided world_id
         result = connection.execute(
@@ -65,6 +90,12 @@ def get_quests(world_id : int):
 # Create Hero - /world/create_hero/{world_id} (POST)
 @router.post("/create_hero/{world_id}")
 def create_hero(world_id: int, hero: Hero):
+    '''
+    Creates a hero in a specified world
+    Takes: world_id (int), Hero
+    Returns: boolean on success or failure
+    '''
+
     sql_to_execute = """
     INSERT INTO hero (name, class, level, age, power, health, xp, world_id)
     VALUES (:name, :classType, :level, :age, :power, :health, :xp, :world_id);
@@ -91,6 +122,12 @@ def create_hero(world_id: int, hero: Hero):
 # Age Hero - /world/age_hero/{hero_id} (POST)
 @router.post("/age_hero/{hero_id}")
 def age_hero(hero_id: int):
+    '''
+    Ages a hero
+    Takes: hero_id (int)
+    Returns: boolean on success or failure
+    '''
+
     sql_to_execute = """
     UPDATE hero
     SET age = age + 1

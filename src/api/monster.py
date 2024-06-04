@@ -19,6 +19,12 @@ router = APIRouter(
 # Find Heroes - /monster/find_heroes/{dungeon_id}/ (GET)
 @router.get("/find_heroes/{dungeon_id}")
 def find_heroes(dungeon_id: int):
+    '''
+    Get query returning all heroes in a dungeon
+    Takes: dungeon_id (int)
+    Returns: list[Hero]
+    '''
+
     with db.engine.begin() as connection:
         result = connection.execute(
             sqlalchemy.text("""
@@ -38,6 +44,12 @@ def find_heroes(dungeon_id: int):
 # Attack Hero - /monster/attack_hero/{monster_id}/ (POST)
 @router.post("/attack_hero/{monster_id}")
 def attack_hero(hero_id: int, monster_id: int):
+    '''
+    Monster deals damage to a hero
+    Takes: hero_id (int), monster_id (int)
+    Returns: boolean on success or failure
+    '''
+
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text
         ("""
@@ -63,6 +75,12 @@ def attack_hero(hero_id: int, monster_id: int):
 # Die - /monster/die/{monster_id} (GET)
 @router.post("/die/{monster_id}")
 def die(monster_id: int):
+    '''
+    Sets the status of monster to dead and removes prior targeting of heroes
+    Takes: monster_id (int)
+    Returns: boolean on success or failure
+    '''
+
     sql_delete_monster = """
     WITH deleted_targeting AS (
         DELETE FROM targeting

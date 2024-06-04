@@ -19,6 +19,13 @@ router = APIRouter(
 # Check XP - /hero/check_xp/{hero_id} (POST)
 @router.get("/check_xp/{hero_id}")
 def check_xp(hero_id: int):
+    '''
+    TODO this does not have an error if there is no hero_id that is matched
+    Returns the xp of a selected hero_id
+    Takes: hero_id (int)
+    Returns: int
+    '''
+
     with db.engine.begin() as connection:
         xp = connection.execute(sqlalchemy.text
             ("""
@@ -34,6 +41,12 @@ def check_xp(hero_id: int):
 # Raise Level - /hero/raise_level/{hero_id} (POST)
 @router.post("/raise_level/{hero_id}")
 def raise_level(hero_id: int):
+    '''
+    increases the level of the hero by 1 if they meet xp threshold
+    Takes: hero_id (int)
+    Returns: boolean on success or failure
+    '''
+
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text
         ("""
@@ -49,6 +62,12 @@ def raise_level(hero_id: int):
 # View Pending Requests - /hero/view_pending_requests/{hero_id} (GET)
 @router.get("/view_pending_requests/{hero_id}")
 def view_pending_requests(hero_id: int):
+    '''
+    Get query to see all pending requests for hero_id from guilds
+    Takes: hero_id (int)
+    Returns: list[Request] (guild_name (TEXT), gold (int))
+    '''
+
     requests = []
     with db.engine.begin() as connection:
         recruit = connection.execute(sqlalchemy.text
@@ -68,6 +87,13 @@ def view_pending_requests(hero_id: int):
 # Accept Request - /hero/accept_request/{hero_id} (POST)
 @router.post("/accept_request/{hero_id}")
 def accept_request(hero_id: int, guild_name: str):
+    '''
+    Recruits hero to guild
+    Takes: hero_id (int), guild_name (str)
+    Returns: boolean on success
+    Throws HTTPException if request not found, hero already in guild, or guild is full
+    '''
+
     sql_to_execute = sqlalchemy.text("""
     WITH guild_info AS (
         SELECT g.id AS guild_id, g.player_capacity
@@ -104,6 +130,13 @@ def accept_request(hero_id: int, guild_name: str):
 # Attack Monster - /hero/attack_monster/{hero_id}/ (POST)
 @router.post("/attack_monster/{hero_id}")
 def attack_monster(monster_id: int, hero_id: int):
+    '''
+    Hero attacks monster, dealing damage
+    Takes: monster_id (int), hero_id (int)
+    Returns: boolean on success
+    Throws HTTPException if hero_id or monster_id not found in db
+    '''
+
     with db.engine.begin() as connection:
         # Lock the rows for update to handle concurrency
         result = connection.execute(sqlalchemy.text("""
@@ -144,6 +177,12 @@ def attack_monster(monster_id: int, hero_id: int):
 # Check Health - /hero/check_health/{hero_id}/ (GET)
 @router.get("/check_health/{hero_id}")
 def check_health(hero_id: int):
+    '''
+    TODO no error checking if hero_id not found
+    Get query to recieve the health of a hero by hero_id
+    Takes: hero_id (int)
+    Returns: int
+    '''
     with db.engine.begin() as connection:
         health = connection.execute(sqlalchemy.text
         ("""
@@ -158,6 +197,13 @@ def check_health(hero_id: int):
 # Run Away - /hero/run_away/{hero_id}/ (POST)
 @router.post("/run_away/{hero_id}")
 def run_away(hero_id: int):
+    '''
+    TODO I think it should throw an error if unable to update location, boolean if can't escape
+    Has an individual hero escape from a dungeon inbetween combat encounters
+    Takes: hero_id (int)
+    Returns: boolean on success or failure
+    '''
+
     # Check if the hero is targeted by any monster
     sql_to_execute = """
     SELECT COUNT(*) 
@@ -185,6 +231,12 @@ def run_away(hero_id: int):
 # Die - /hero/die/{hero_id}/ (POST)
 @router.post("/die/{hero_id}")
 def die(hero_id: int):
+    '''
+    Sets the status of hero to dead and removes prior targeting of monsters
+    Takes: hero_id (int)
+    Returns: boolean on success or failure
+    '''
+
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text
         ("""
@@ -208,6 +260,12 @@ def die(hero_id: int):
 # Find Monsters - /hero/find_monsters/{dungeon_id}/ (GET)
 @router.get("/find_monsters/{dungeon_id}")
 def find_monsters(dungeon_id: int):
+    '''
+    Get query that returns all monsters in a dungeon by dungeon_id
+    Takes: dungeon_id (int)
+    Returns: list[Monster]
+    '''
+
     sql_to_execute = """
     SELECT id, type AS name, level, health, power
     FROM monster
@@ -231,6 +289,26 @@ def find_monsters(dungeon_id: int):
 
 @router.get("/{hero_id}/monster_interactions")
 def hero_monster_interactions(hero_id: int):
+    '''
+    Provides detailed insights into a hero's interactions with monsters
+    Takes: hero_id (int)
+    Returns: json response
+        - "status" boolean on success or failure
+        - "hero_id" (int)
+        - "total_battles" (int)
+        - "monsters_defeated" (int)
+        - "total_damage_dealt" (int)
+        - "battle_details" (monster_id (int),
+                            monster_type (TEXT),
+                            monster_level (int),
+                            initial_health (int),
+                            remaining_health (int),
+                            damage_dealt (int),
+                            monster_power (int),
+                            battle_time (int),
+                            monster_defeated (bool))
+    '''
+
     sql_monster_interactions = """
     WITH hero_battles AS (
         SELECT

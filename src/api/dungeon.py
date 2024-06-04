@@ -12,10 +12,21 @@ router = APIRouter(
     dependencies=[Depends(auth.get_api_key)],
 )
 
-# Endpoint
-
 # Models
 class Dungeon(BaseModel):
+    '''
+    Attributes -
+        dungeon_name: str
+            name of the dungeon
+        dungeon_level: int
+            level of the dungeon
+        player_capacity: int
+            how many players max can be in the dungeon at a time
+        monster_capacity: int
+            how many monsters can be in the dungeon
+        reward: int
+            the gold awarded for clearing the dungeon
+    '''
     dungeon_name: str
     dungeon_level: int
     player_capacity: int
@@ -23,17 +34,41 @@ class Dungeon(BaseModel):
     reward: int
 
 class Monster(BaseModel):
+    '''
+    Attributes -
+        type: str
+            category of monster (ex. Coconut Slime, BigFoot, Giant Ant)
+        health: int
+            hit points of the monster
+        power: int
+            how much damage the monster does
+        level: int
+            the level of the monster
+    '''
     type: str
     health: int
     power: int
     level: int
 
 class Hero(BaseModel):
+    '''
+    Attributes -
+        hero_name: str
+            the name of the hero
+    '''
     hero_name: str
+    
+# Endpoint
 
 # Create Dungeon - /dungeon/create_dungeon/{world_id} (POST)
 @router.post("/create_dungeon/{world_id}")
 def create_dungeon(world_id: int, dungeon: Dungeon):
+    '''
+    Creates a Dungeon at specified world_id
+    Takes: world_id (int), Dungeon (dungeon_name, dungeon_level, player_capacity, monster_capacity, reward)
+    Returns: boolean on success or failure of dungeon creation
+    '''
+
     sql_to_execute = """
     INSERT INTO dungeon (name, level, player_capacity, monster_capacity, reward, world_id)
     VALUES (:name, :level, :player_capacity, :monster_capacity, :reward, :world_id);
@@ -55,6 +90,12 @@ def create_dungeon(world_id: int, dungeon: Dungeon):
 # Create Monster - /dungeon/create_monster/{dungeon_id} (POST)
 @router.post("/create_monster/{dungeon_id}")
 def create_monster(dungeon_id: int, monsters: Monster):
+    '''
+    Creates a monster within the specified dungeon_id
+    Takes: dungeon_id (int), Monster (type, health, power, level)
+    Returns: boolean on success or failure of monster creation
+    '''
+
     sql_to_execute = """
     INSERT INTO monster (type, health, dungeon_id, power, level)
     VALUES (:type, :health, :dungeon_id, :power, :level);
@@ -75,6 +116,12 @@ def create_monster(dungeon_id: int, monsters: Monster):
 # Collect Bounty - /dungeon/collect_bounty/{guild_id} (POST)
 @router.post("/collect_bounty/{guild_id}")
 def collect_bounty(guild_id: int, dungeon_id: int):
+    '''
+    Adds gold from cleared dungeon to guild
+    Takes: guild_id (int), dungeon_id (int)
+    Returns: gold (int) on success, boolean False on failure
+    '''
+
     # Only collect bounty if no monsters are alive (no monsters with that dungeon_id)
     sql_to_execute = sqlalchemy.text("""
     WITH monster_count AS (
@@ -99,6 +146,12 @@ def collect_bounty(guild_id: int, dungeon_id: int):
 # Assess Damage - /dungeon/assess_damage/{dungeon_id} (GET)
 @router.get("/assess_damage/{dungeon_id}")
 def assess_damage(guild_id: int, dungeon_id: int):
+    '''
+    Get query providing the heroes that survived from a dungeon quest
+    Takes: guild_id (int), dungeon_id (int)
+    Returns: list[Hero]
+    '''
+
     sql_to_execute = """
     SELECT name, level, power, health
     FROM hero
