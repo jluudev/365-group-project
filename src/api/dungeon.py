@@ -111,6 +111,15 @@ def create_monster(dungeon_id: int, monsters: Monster):
     INSERT INTO monster (type, health, dungeon_id, power, level)
     VALUES (:type, :health, :dungeon_id, :power, :level);
     """
+    if monsters.health < 0:
+        raise HTTPException("Invalid Monster Health")
+    if dungeon_id < 0:
+        raise HTTPException("Invalid Dungeon Id")
+    if monsters.power < 0:
+        raise HTTPException("Invalid Monster Power")
+    if monsters.level < 0:
+        raise HTTPException("Invalid Monster Level")
+
     with db.engine.begin() as connection:
         result = connection.execute(sql_to_execute, {
             "type": monsters.type,
