@@ -84,13 +84,15 @@ def recruit_hero(guild_id: int, hero: Hero):
     FROM hero 
     WHERE name = :hero_name AND guild_id IS NULL AND world_id = (SELECT world_id FROM guild WHERE id = :guild_id);
     """)
+    if hero is NULL:
+        raise HTTPException(status_code = 404, detail = "Hero not found")
 
     with db.engine.begin() as connection:
         result = connection.execute(sql_to_execute, {'hero_name': hero.hero_name, 'guild_id': guild_id})
         if result.rowcount > 0:
             return {"success": True}
         else:
-            return {"success": False, "message": "Hero not found or already in a guild"}
+            raise HTTPException(status_code = 404, detail = "Hero already in guild")
 
 # Check Available Heroes - /guild/available_heroes/{guild_id} (GET)
 @router.get("/available_heroes/{guild_id}")
