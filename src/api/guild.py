@@ -170,7 +170,7 @@ def send_party(guild_id: int, party: list[Hero], dungeon_name: str):
                                             {"dungeon_name": dungeon_name})
             return {"success": True}
         else:
-            return {"success": False, "message": "Hero not found or already in a dungeon"}
+            raise HTTPException(status_code = 404, detail = "Hero not found or already in a dungeon")
 
 @router.get("/leaderboard")
 def get_leaderboard():
