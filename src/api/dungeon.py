@@ -99,13 +99,15 @@ def collect_bounty(guild_id: int, dungeon_id: int):
         UPDATE dungeon
         SET status = 'completed'
         WHERE id = :dungeon_id
+        RETURNING id
     ),
     hero_update AS (
         UPDATE hero
         SET dungeon_id = NULL
         WHERE dungeon_id = :dungeon_id AND health > 0
+        RETURNING id
     )
-    SELECT * FROM guild_update, dungeon_update, hero_update;
+    SELECT * FROM guild_update;
     """)
     with db.engine.begin() as connection:
         result = connection.execute(sql_to_execute, {"dungeon_id": dungeon_id, "guild_id": guild_id})
