@@ -51,11 +51,11 @@ def create_guild(world_id: int, guild: Guild):
     VALUES (:name, :max_capacity, :gold, :world_id);
     """
     if world_id < 0:
-        raise HTTPException("Invalid World Id")
+        raise HTTPException(status_code = 400, detail = "Invalid World Id")
     if guild.max_capacity < 0:
-        raise HTTPException("Invalid Guild Capacity")
+        raise HTTPException(status_code = 400, detail = "Invalid Guild Capacity")
     if guild.gold < 0:
-        raise HTTPException("Invalid Gold")
+        raise HTTPException(status_code = 400, detail = "Invalid Gold")
 
     with db.engine.begin() as connection:
         connection.execute(sql_to_execute, {

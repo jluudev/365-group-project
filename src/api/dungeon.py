@@ -75,15 +75,15 @@ def create_dungeon(world_id: int, dungeon: Dungeon):
     """
     with db.engine.begin() as connection:
         if dungeon.dungeon_level < 0:
-            raise HTTPException("Invalid Dungeon Level")
+            raise HTTPException(status_code = 400, detail = "Invalid Dungeon Level")
         if dungeon.player_capacity < 0:
-            raise HTTPException("Invalid Player Capacity")
+            raise HTTPException(status_code = 400, detail = "Invalid Player Capacity")
         if dungeon.monster_capacity < 0:
-            raise HTTPException("Invalid Monster Capacity")
+            raise HTTPException(status_code = 400, detail = "Invalid Monster Capacity")
         if dungeon.reward < 0:
-            raise HTTPException("Invalid Reward")
+            raise HTTPException(status_code = 400, detail = "Invalid Reward")
         if world_id < 0:
-            raise HTTPException("Invalid World Id")
+            raise HTTPException(status_code = 400, detail = "Invalid World Id")
 
         result = connection.execute(sql_to_execute, {
             "name": dungeon.dungeon_name,
@@ -112,13 +112,13 @@ def create_monster(dungeon_id: int, monsters: Monster):
     VALUES (:type, :health, :dungeon_id, :power, :level);
     """
     if monsters.health < 0:
-        raise HTTPException("Invalid Monster Health")
+        raise HTTPException(status_code = 400, detail = "Invalid Monster Health")
     if dungeon_id < 0:
-        raise HTTPException("Invalid Dungeon Id")
+        raise HTTPException(status_code = 400, detail = "Invalid Dungeon Id")
     if monsters.power < 0:
-        raise HTTPException("Invalid Monster Power")
+        raise HTTPException(status_code = 400, detail = "Invalid Monster Power")
     if monsters.level < 0:
-        raise HTTPException("Invalid Monster Level")
+        raise HTTPException(status_code = 400, detail = "Invalid Monster Level")
 
     with db.engine.begin() as connection:
         result = connection.execute(sql_to_execute, {
