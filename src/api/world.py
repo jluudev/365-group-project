@@ -21,11 +21,13 @@ class Hero(BaseModel):
     xp: int = 0
 
 class HeroView(BaseModel):
+    id: int
     name: str
     power: int
     health: int
 
 class DungeonQuest(BaseModel):
+    dungeon_id: int
     dungeon_name: str
     level: int
 
@@ -40,14 +42,14 @@ def view_heroes(world_id: int):
     heroes = []
     with db.engine.begin() as connection:
         sql_to_execute = """
-            SELECT name, power, health
+            SELECT id, name, power, health
             FROM hero
             WHERE guild_id IS NULL AND world_id = :world_id;
         """
         result = connection.execute(sqlalchemy.text(sql_to_execute), {"world_id": world_id})
 
         heroes = [
-            HeroView(name=row.name, power=row.power, health=row.health) 
+            HeroView(id=row.id, name=row.name, power=row.power, health=row.health) 
             for row in result
         ]
 
@@ -57,11 +59,11 @@ def view_heroes(world_id: int):
 def get_quests(world_id: int):
     with db.engine.connect() as connection:
         result = connection.execute(
-            sqlalchemy.text("""SELECT name, level FROM dungeon WHERE world_id = :world_id AND status = 'open'"""),
+            sqlalchemy.text("""SELECT id, name, level FROM dungeon WHERE world_id = :world_id AND status = 'open'"""),
             {"world_id": world_id}
         )
         dungeons = [
-            DungeonQuest(dungeon_name=row[0], level=row[1]) 
+            DungeonQuest(dungeon_id=row[0], dungeon_name=row[1], level=row[2]) 
             for row in result.fetchall()
         ]
     return dungeons
