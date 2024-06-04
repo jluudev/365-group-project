@@ -98,11 +98,10 @@ def collect_bounty(guild_id: int, dungeon_id: int):
         SELECT COUNT(*) AS count
         FROM monster
         WHERE dungeon_id = :dungeon_id AND health > 0
-        FOR UPDATE
     ),
     guild_update AS (
         UPDATE guild
-        SET gold = gold + (SELECT gold_reward FROM dungeon WHERE id = :dungeon_id FOR UPDATE)
+        SET gold = gold + (SELECT gold_reward FROM dungeon WHERE id = :dungeon_id)
         WHERE id = :guild_id
         AND (SELECT count FROM monster_count) = 0
         RETURNING gold
@@ -111,6 +110,7 @@ def collect_bounty(guild_id: int, dungeon_id: int):
         UPDATE dungeon
         SET status = 'completed'
         WHERE id = :dungeon_id
+        AND NOT EXISTS (SELECT 1 FROM monster WHERE dungeon_id = :dungeon_id AND health > 0)
         RETURNING id
     ),
     hero_update AS (
@@ -121,7 +121,7 @@ def collect_bounty(guild_id: int, dungeon_id: int):
     )
     SELECT * FROM guild_update;
     """)
-    
+
     with db.engine.begin() as connection:
         result = connection.execute(sql_to_execute, {"dungeon_id": dungeon_id, "guild_id": guild_id})
         if result.rowcount > 0:
@@ -129,7 +129,6 @@ def collect_bounty(guild_id: int, dungeon_id: int):
             return {"success": True, "gold": gold}
         else:
             return {"success": False, "message": "Failed to collect bounty"}
-
 
 @router.get("/assess_damage/{dungeon_id}", response_model=list[Hero])
 def assess_damage(guild_id: int, dungeon_id: int):
