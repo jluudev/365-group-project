@@ -46,18 +46,36 @@ def raise_level(hero_id: int):
     Takes: hero_id (int)
     Returns: boolean on success or failure
     '''
-
+        
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text
-        ("""
-        UPDATE hero
-        SET level = level + 1, xp = xp - 100
-        WHERE id = :hero_id AND xp >= 100
+        result = connection.execute(sqlalchemy.text(
+        """
+        WITH hero AS (
+            SELECT id, level, xp
+            FROM hero
+            WHERE id = :hero_id
+        ),
+        updated_hero AS (
+            UPDATE hero
+            SET level = level + 1, xp = xp - 100
+            WHERE id = :hero_id AND xp >= 100
+            RETURNING id, level, xp
+        )
+        SELECT
+            hero.xp,
+            updated_hero.xp as updated_xp,
+            updated_hero.level as updated_level
+        FROM hero
+        LEFT JOIN updated_hero ON updated_hero.id = hero.id
         """), [{"hero_id": hero_id}])
-        if result.rowcount > 0:
-            return {"success": True}
+
+        if result.rowcount == 0:
+            return {"success": False, "message": "No hero matching id %d" % hero_id}
+        result = result.one()
+        if result.updated_level != None:
+            return {"success": True, "message": ("hero %d: level= %d, xp= %d" % (hero_id, result.updated_level, result.updated_xp)) }
         else:
-            return {"success": False, "message": "Not enough XP to raise level"}
+            return {"success": False, "message": ("Not enough XP to raise level, current xp of hero %d: %d" % (hero_id, result.xp))}
 
 # View Pending Requests - /hero/view_pending_requests/{hero_id} (GET)
 @router.get("/view_pending_requests/{hero_id}")
