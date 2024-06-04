@@ -8,7 +8,7 @@ load_dotenv()
 
 # Get the base URL and access token from the environment variables
 base_url = os.getenv("BASE_URL")
-access_token = os.getenv("ACCESS_TOKEN")  # Add your access token to .env
+access_token = os.getenv("ACCESS_TOKEN")
 
 headers = {
     "accept": "application/json",
@@ -50,7 +50,7 @@ def recruit_hero_to_guild(execution_times):
     if not heroes:
         return
 
-    print(f"Heroes response: {heroes}")  # Debug print to see the actual response
+    print(f"Heroes response: {heroes}")
 
     target_hero = None
 
@@ -162,7 +162,7 @@ def party_fights_and_clears_dungeon(execution_times):
     if not monsters:
         return
 
-    print(f"Monsters response: {monsters}")  # Debug print to see the actual response
+    print(f"Monsters response: {monsters}")
 
     # Simulate fights between heroes and monsters
     for monster in monsters:
