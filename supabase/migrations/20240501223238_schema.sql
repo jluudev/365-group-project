@@ -43,6 +43,7 @@ CREATE TABLE hero (
     name TEXT NOT NULL UNIQUE,
     power INT,
     health INT,
+    age INT,
     xp INT DEFAULT 0,
     level INT DEFAULT 1,
     status TEXT DEFAULT 'alive', -- Examples: 'alive', 'dead'

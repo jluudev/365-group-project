@@ -18,8 +18,6 @@ class Hero(BaseModel):
     Attributes -
         hero_name: str
             name of the hero
-        classType: str
-            the specialization of the hero
         level: int
         age: int
             how old the hero is
@@ -29,7 +27,6 @@ class Hero(BaseModel):
         xp: int
     '''
     hero_name: str
-    classType: str
     level: int
     age: int
     power: int
@@ -50,7 +47,7 @@ def view_heroes(world_id: int):
     heroes = []
     with db.engine.begin() as connection:
         sql_to_execute ="""
-            SELECT name, power, health
+            SELECT name, level, power, age, health
             FROM hero
             WHERE guild_id IS NULL AND world_id = :world_id;
         """
@@ -60,7 +57,9 @@ def view_heroes(world_id: int):
         for row in result:
             heroes.append({
                 "name": row.name,
+                "level": row.level,
                 "power": row.power,
+                "age": row.age,
                 "health": row.health
             })
 
@@ -97,13 +96,12 @@ def create_hero(world_id: int, hero: Hero):
     '''
 
     sql_to_execute = """
-    INSERT INTO hero (name, class, level, age, power, health, xp, world_id)
-    VALUES (:name, :classType, :level, :age, :power, :health, :xp, :world_id);
+    INSERT INTO hero (name, level, age, power, health, xp, world_id)
+    VALUES (:name, :level, :age, :power, :health, :xp, :world_id)
     """
     with db.engine.begin() as connection:
-        result = connection.execute(sql_to_execute, {
+        result = connection.execute(sqlalchemy.text(sql_to_execute), {
             "name": hero.hero_name,
-            "classType": hero.classType,
             "level": hero.level,
             "age": hero.age,
             "power": hero.power,
