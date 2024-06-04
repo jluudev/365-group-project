@@ -1,8 +1,6 @@
-from fastapi import APIRouter, Depends
-from enum import Enum
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from src.api import auth
-
 import sqlalchemy
 from src import database as db
 
@@ -12,12 +10,20 @@ router = APIRouter(
     dependencies=[Depends(auth.get_api_key)],
 )
 
-# Model
+# Models
+class HeroDetails(BaseModel):
+    id: int
+    name: str
+    level: int
+    power: int
+
+class SuccessResponse(BaseModel):
+    success: bool
+    message: str = None
 
 # Endpoints
 
-# Find Heroes - /monster/find_heroes/{dungeon_id}/ (GET)
-@router.get("/find_heroes/{dungeon_id}")
+@router.get("/find_heroes/{dungeon_id}", response_model=list[HeroDetails])
 def find_heroes(dungeon_id: int):
     with db.engine.begin() as connection:
         result = connection.execute(
@@ -26,42 +32,36 @@ def find_heroes(dungeon_id: int):
             FROM hero
             JOIN guild ON hero.guild_id = guild.id
             JOIN dungeon ON guild.world_id = dungeon.world_id AND dungeon.id = hero.dungeon_id
-            WHERE dungeon.id = :dungeon_id and hero.health > 0
-            """
-        ), {"dungeon_id": dungeon_id})
+            WHERE dungeon.id = :dungeon_id AND hero.health > 0
+            """), {"dungeon_id": dungeon_id}
+        )
         heroes = [
-            {"id": row[0], "name": row[1], "level": row[2], "power": row[3]} 
+            HeroDetails(id=row[0], name=row[1], level=row[2], power=row[3]) 
             for row in result.fetchall()
         ]
     return heroes
 
-# Attack Hero - /monster/attack_hero/{monster_id}/ (POST)
-@router.post("/attack_hero/{monster_id}")
+@router.post("/attack_hero/{monster_id}", response_model=SuccessResponse)
 def attack_hero(hero_id: int, monster_id: int):
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text
-        ("""
-        UPDATE hero
-        SET health = (SELECT health FROM hero WHERE id = :hero_id) - 
-        (SELECT power FROM monster WHERE id = :monster_id)
-        WHERE id = :hero_id
-        """), [{"hero_id": hero_id, "monster_id": monster_id}])
+        result = connection.execute(sqlalchemy.text("""
+            UPDATE hero
+            SET health = (SELECT health FROM hero WHERE id = :hero_id) - 
+            (SELECT power FROM monster WHERE id = :monster_id)
+            WHERE id = :hero_id
+        """), {"hero_id": hero_id, "monster_id": monster_id})
 
-        connection.execute(sqlalchemy.text(
-        """
-        INSERT INTO targeting (hero_id, monster_id)
-        VALUES (:hero_id, :monster_id)
-        """), [{"hero_id": hero_id, "monster_id": monster_id}]
-        )
+        connection.execute(sqlalchemy.text("""
+            INSERT INTO targeting (hero_id, monster_id)
+            VALUES (:hero_id, :monster_id)
+        """), {"hero_id": hero_id, "monster_id": monster_id})
 
         if result.rowcount > 0:
             return {"success": True}
         else:
             return {"success": False, "message": "Hero not found"}
 
-
-# Die - /monster/die/{monster_id} (GET)
-@router.post("/die/{monster_id}")
+@router.post("/die/{monster_id}", response_model=SuccessResponse)
 def die(monster_id: int):
     sql_delete_monster = """
     WITH deleted_targeting AS (
