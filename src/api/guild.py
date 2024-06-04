@@ -50,6 +50,13 @@ def create_guild(world_id: int, guild: Guild):
     INSERT INTO guild (name, max_capacity, gold, world_id)
     VALUES (:name, :max_capacity, :gold, :world_id);
     """
+    if world_id < 0:
+        raise HTTPException("Invalid World Id")
+    if guild.max_capacity < 0:
+        raise HTTPException("Invalid Guild Capacity")
+    if guild.gold < 0:
+        raise HTTPException("Invalid Gold")
+
     with db.engine.begin() as connection:
         connection.execute(sql_to_execute, {
             "name": guild.guild_name,
