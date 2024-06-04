@@ -89,7 +89,7 @@ def collect_bounty(guild_id: int, dungeon_id: int):
     WHERE dungeon_id = :dungeon_id AND health > 0
     )
     UPDATE guild
-    SET gold = gold + (SELECT gold_reward FROM dungeon WHERE id = :dungeon_id)
+    SET gold = gold + (SELECT reward FROM dungeon WHERE id = :dungeon_id)
     WHERE id = :guild_id
     AND (SELECT count FROM monster_count) = 0
     RETURNING gold;
