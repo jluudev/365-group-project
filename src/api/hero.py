@@ -4,6 +4,7 @@ from src.api import auth
 import sqlalchemy
 from sqlalchemy import func
 from src import database as db
+from typing import Optional
 
 router = APIRouter(
     prefix="/hero",
@@ -59,8 +60,8 @@ class Hero(BaseModel):
 
 class UpdatedHero(BaseModel):
     xp: int
-    updated_xp: int
-    updated_level: int
+    updated_xp: Optional[int]
+    updated_level: Optional[int]
 
 # Endpoints
 
@@ -118,25 +119,24 @@ def raise_level(hero_id: int):
     
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text(sql_to_execute), {"hero_id": hero_id})
-
-        if result.rowcount == 0:
-            return {"success": False, "message": f"No hero matching id {hero_id}"}
-
         row = result.fetchone()
-        if row:
-            updated_hero = UpdatedHero(
-                xp=row[0],
-                updated_xp=row[1],
-                updated_level=row[2]
-            )
+        
+        if not row:
+            raise HTTPException(status_code=400, detail="Hero not found")
 
-            if updated_hero.updated_level is not None:
-                return {"success": True, "message": f"Hero id #{hero_id}: level={updated_hero.updated_level}, xp={updated_hero.updated_xp}"}
-            else:
-                return {"success": False, "message": f"Not enough XP to raise level, current xp of hero {hero_id}: {updated_hero.xp}"}
-        else:
-            return {"success": False, "message": f"No rows returned for hero id {hero_id}"}
+        updated_hero = UpdatedHero(
+            xp=row.xp,
+            updated_xp=row.updated_xp,
+            updated_level=row.updated_level
+        )
 
+        if updated_hero.updated_level is None:
+            raise HTTPException(status_code=400, detail="Hero does not have enough XP to level up")
+
+        return SuccessResponse(
+            success=True,
+            message=f"Hero id #{hero_id}: level={updated_hero.updated_level}, xp={updated_hero.updated_xp}"
+        )
 
 @router.get("/view_pending_requests/{hero_id}", response_model=list[PendingRequest])
 def view_pending_requests(hero_id: int):
@@ -201,7 +201,7 @@ def accept_request(hero_id: int, guild_name: str):
         result = connection.execute(sql_to_execute, {"guild_name": guild_name, "hero_id": hero_id})
         hero_updated = result.fetchone()
         if hero_updated:
-            return {"success": True}
+            return SuccessResponse(success=True, message=f"Joined guild {guild_name} successfully")
         else:
             raise HTTPException(status_code=400, detail="Request not found or hero already in a guild or guild is full")
 
@@ -277,7 +277,7 @@ def run_away(hero_id: int):
     Returns:
         SuccessResponse: Indicates whether the hero successfully ran away.
     """
-    
+
     sql_to_execute = """
     SELECT COUNT(*) 
     FROM targeting 
@@ -287,7 +287,7 @@ def run_away(hero_id: int):
         result = connection.execute(sqlalchemy.text(sql_to_execute), {"hero_id": hero_id})
         row_count = result.fetchone()[0]
         if row_count > 0:
-            return {"success": False, "message": "Cannot run away while being targeted by a monster"}
+            raise HTTPException(status_code=400, detail="Hero is being targeted by a monster. Cannot run away.")
         else:
             update_sql = """
                 UPDATE hero
