@@ -47,8 +47,20 @@ def create_guild(world_id: int, guild: Guild):
     '''
 
     sql_to_execute = """
+    WITH guild_count AS (
+        SELECT COUNT(*) AS current_guild_count
+        FROM guild
+        WHERE world_id = :world_id
+    ),
+    capacity_check AS (
+        SELECT guild_capacity
+        FROM world
+        WHERE id = :world_id
+    )
     INSERT INTO guild (name, player_capacity, gold, world_id)
-    VALUES (:name, :player_capacity, :gold, :world_id);
+    SELECT :name, :player_capacity, :gold, :world_id
+    FROM guild_count, capacity_check
+    WHERE guild_count.current_guild_count < capacity_check.guild_capacity
     """
     if world_id < 0:
         raise HTTPException(status_code = 400, detail = "Invalid World Id")
@@ -58,16 +70,19 @@ def create_guild(world_id: int, guild: Guild):
         raise HTTPException(status_code = 400, detail = "Invalid Gold")
 
     with db.engine.begin() as connection:
-        connection.execute(sqlalchemy.text(sql_to_execute), {
-            "name": guild.guild_name,
-            "player_capacity": guild.player_capacity,
-            "gold": guild.gold,
-            "world_id": world_id
-        })
-
-    return {
-        "success": True
-    }
+        try:
+            result = connection.execute(sqlalchemy.text(sql_to_execute), {
+                "name": guild.guild_name,
+                "player_capacity": guild.player_capacity,
+                "gold": guild.gold,
+                "world_id": world_id
+            })
+            if result.rowcount > 0:
+                return {"success": True}
+            else:
+                return {"success": False, "message": "World at max guild capacity"}
+        except sqlalchemy.exc.IntegrityError as http:
+            return {"success": False, "message": "Guild name must be unique within specified world %d" % world_id}
 
 # Recruit Hero - /guild/recruit_hero/{guild_id} (POST)
 @router.post("/recruit_hero/{guild_id}")
