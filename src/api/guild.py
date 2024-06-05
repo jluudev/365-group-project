@@ -81,7 +81,7 @@ def create_guild(world_id: int, guild: Guild):
             if result.rowcount > 0:
                 return {"success": True, "message": "guild %d created" % result.fetchone().id}
             else:
-                return {"success": False, "message": "World at max guild capacity"}
+                return {"success": False, "message": "World %d at max guild capacity" % world_id}
         except sqlalchemy.exc.IntegrityError as http:
             return {"success": False, "message": "Guild name must be unique within specified world %d" % world_id}
 

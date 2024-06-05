@@ -20,18 +20,18 @@ class Dungeon(BaseModel):
             name of the dungeon
         dungeon_level: int
             level of the dungeon
-        player_capacity: int
+        party_capacity: int
             how many players max can be in the dungeon at a time
         monster_capacity: int
             how many monsters can be in the dungeon
-        reward: int
+        gold_reward: int
             the gold awarded for clearing the dungeon
     '''
     dungeon_name: str
     dungeon_level: int
-    player_capacity: int
+    party_capacity: int
     monster_capacity: int
-    reward: int
+    gold_reward: int
 
 class Monster(BaseModel):
     '''
@@ -65,38 +65,54 @@ class Hero(BaseModel):
 def create_dungeon(world_id: int, dungeon: Dungeon):
     '''
     Creates a Dungeon at specified world_id\n
-    Takes: world_id (int), Dungeon (dungeon_name, dungeon_level, player_capacity, monster_capacity, reward)\n
+    Takes: world_id (int), Dungeon (dungeon_name, dungeon_level, party_capacity, monster_capacity, gold_reward)\n
     Returns: boolean on success or failure of dungeon creation
     '''
 
     sql_to_execute = """
-    INSERT INTO dungeon (name, level, player_capacity, monster_capacity, reward, world_id)
-    VALUES (:name, :level, :player_capacity, :monster_capacity, :reward, :world_id);
+    WITH dungeon_count AS (
+        SELECT COUNT(*) AS current_dungeon_count
+        FROM dungeon
+        WHERE world_id = :world_id
+    ),
+    capacity_check AS (
+        SELECT dungeon_capacity
+        FROM world
+        WHERE id = :world_id
+    )
+    INSERT INTO dungeon (name, level, party_capacity, monster_capacity, gold_reward, world_id)
+    SELECT :name, :level, :party_capacity, :monster_capacity, :gold_reward, :world_id
+    FROM dungeon_count, capacity_check
+    WHERE dungeon_count.current_dungeon_count < capacity_check.dungeon_capacity
+    RETURNING id
     """
+    if dungeon.dungeon_level < 0:
+        raise HTTPException(status_code = 400, detail = "Invalid Dungeon Level")
+    if dungeon.party_capacity < 0:
+        raise HTTPException(status_code = 400, detail = "Invalid Player Capacity")
+    if dungeon.monster_capacity < 0:
+        raise HTTPException(status_code = 400, detail = "Invalid Monster Capacity")
+    if dungeon.gold_reward < 0:
+        raise HTTPException(status_code = 400, detail = "Invalid Gold Reward")
+    if world_id < 0:
+        raise HTTPException(status_code = 400, detail = "Invalid World Id")
+    
     with db.engine.begin() as connection:
-        if dungeon.dungeon_level < 0:
-            raise HTTPException(status_code = 400, detail = "Invalid Dungeon Level")
-        if dungeon.player_capacity < 0:
-            raise HTTPException(status_code = 400, detail = "Invalid Player Capacity")
-        if dungeon.monster_capacity < 0:
-            raise HTTPException(status_code = 400, detail = "Invalid Monster Capacity")
-        if dungeon.reward < 0:
-            raise HTTPException(status_code = 400, detail = "Invalid Reward")
-        if world_id < 0:
-            raise HTTPException(status_code = 400, detail = "Invalid World Id")
-
-        result = connection.execute(sql_to_execute, {
-            "name": dungeon.dungeon_name,
-            "level": dungeon.dungeon_level,
-            "player_capacity": dungeon.player_capacity,
-            "monster_capacity": dungeon.monster_capacity,
-            "reward": dungeon.reward,
-            "world_id": world_id
-        })
-        if result.rowcount > 0:
-            return {"success": True}
-        else:
-            return {"success": False}
+        try:
+            result = connection.execute(sqlalchemy.text(sql_to_execute), {
+                "name": dungeon.dungeon_name,
+                "level": dungeon.dungeon_level,
+                "party_capacity": dungeon.party_capacity,
+                "monster_capacity": dungeon.monster_capacity,
+                "gold_reward": dungeon.gold_reward,
+                "world_id": world_id
+            })
+            if result.rowcount > 0:
+                return {"success": True, "message": "dungeon %d created" % result.fetchone().id}
+            else:
+                return {"success": False, "message": "World %d at max dungeon capacity" % world_id}
+        except sqlalchemy.exc.IntegrityError as http:
+            return {"success": False, "message": "Dungeon name must be unique within specified world %d" % world_id}
 
 # Create Monster - /dungeon/create_monster/{dungeon_id} (POST)
 @router.post("/create_monster/{dungeon_id}")

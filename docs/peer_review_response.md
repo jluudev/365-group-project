@@ -5,6 +5,8 @@
 - added docstrings to all function endpoints and class declarations
 - changed accessing of find_heroes' hero data to column selection rather than indexing
 - the following endpoints have been updated to reflect more informative success and failure messages
+    - create_guild
+    - create_dungeon
     - create_monster
     - raise_level
     - recruit_hero
