@@ -219,7 +219,7 @@ def attack_monster(hero_id: int, monster_id: int):
     """
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text("""
-            SELECT m.health AS monster_health, h.power AS hero_power
+            SELECT m.health AS monster_health, h.power AS hero_power, h.health AS hero_health
             FROM monster m
             JOIN hero h ON h.id = :hero_id
             WHERE m.id = :monster_id
@@ -227,7 +227,11 @@ def attack_monster(hero_id: int, monster_id: int):
         """), {"monster_id": monster_id, "hero_id": hero_id}).fetchone()
         if not result:
             raise HTTPException(status_code=404, detail="Hero or Monster not found")
-        
+
+        hero_health = result.hero_health
+        if hero_health <= 0:
+            raise HTTPException(status_code=400, detail="Hero's health is zero, cannot attack")
+
         monster_health = result.monster_health
         hero_power = result.hero_power
         new_health = monster_health - hero_power
