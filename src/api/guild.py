@@ -147,8 +147,8 @@ def available_heroes(guild_id: int):
             """), {"guild_id": guild_id}
         )
         heroes = [
-            HeroDetails(hero_name=row[0], power=row[1], health=row[2], level=row[3]) 
-            for row in result.fetchall()
+            HeroDetails(hero_name=row['name'], power=row['power'], health=row['health'], level=row['level']) 
+            for row in result.mappings()
         ]
     return heroes
 

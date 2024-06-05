@@ -3,5 +3,18 @@
 - made consistent error handling in guild/send_party
 - Added age and class to hero table to fix insertion errors
 - added docstrings to all function endpoints and class declarations
+- create hero error handling
+- better errors for recruit hero
+- made consistent error handling in guild/send_party
+- Added age to hero table
+- added docstrings to all function endpoints and class declarations
+- changed accessing of find_heroes' hero data to column selection rather than indexing
+- remove_heroes renamed to remove_dead_heroes to be more reflective of function's purpose
+- the following endpoints have been updated to reflect more informative success and failure messages
+    - create_guild
+    - create_dungeon
+    - create_monster
+    - raise_level
+    - recruit_hero
 - use Pydantic models
 - there were Internal Server Errors due to executing sql without sqlalchemy.text()
