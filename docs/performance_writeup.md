@@ -36,7 +36,7 @@ Link to fake data inserting:
 - **Collect Bounty**
   - **POST** `/dungeon/collect_bounty/{guild_id}` - 5.21 ms
 - **Assess Damage**
-  - **GET** `/dungeon/assess_damage/{dungeon_id}`
+  - **GET** `/dungeon/assess_damage/{dungeon_id}` - 6.44 ms
 
 ### Hero Endpoints
 - **Check XP**
@@ -53,8 +53,6 @@ Link to fake data inserting:
   - **GET** `/hero/check_health/{hero_id}` - 3.14 ms
 - **Run Away**
   - **POST** `/hero/run_away/{hero_id}` - 5.33 ms
-- **Die**
-  - **POST** `/hero/die/{hero_id}` - 6.01 ms
 - **Find Monsters**
   - **GET** `/hero/find_monsters/{dungeon_id}` - 82.23 ms
 - **Hero Monster Interactions**
@@ -65,8 +63,6 @@ Link to fake data inserting:
   - **GET** `/monster/find_heroes/{dungeon_id}` - 22.93 ms
 - **Attack Hero**
   - **POST** `/monster/attack_hero/{monster_id}` - 4.09 ms
-- **Die**
-  - **POST** `/monster/die/{monster_id}` - 3.65 ms
 
 ### Guild Endpoints
 - **Create Guild**
@@ -74,7 +70,7 @@ Link to fake data inserting:
 - **Recruit Hero**
   - **POST** `/guild/recruit_hero/{guild_id}` - 6.37 ms
 - **Available Heroes**
-  - **GET** `/guild/available_heroes/{guild_id}`
+  - **GET** `/guild/available_heroes/{guild_id}` - 4.22 ms
 - **Remove Heroes**
   - **POST** `/guild/remove_heroes/{guild_id}` 4.21 ms
 - **Send Party**
