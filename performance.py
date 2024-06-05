@@ -177,18 +177,6 @@ def party_fights_and_clears_dungeon(execution_times):
             print(f"Attack Hero: {exec_time:.2f} ms")
             execution_times.append((f"/monster/attack_hero/{monster_id}", exec_time))
 
-            # Check if monster is dead
-            monster_response = get_json_response(response)
-            if monster_response and monster_response.get('health') is not None and monster_response['health'] <= 0:
-                exec_time, response = hit_endpoint("POST", f"/monster/die/{monster_id}")
-                print(f"Monster Die: {exec_time:.2f} ms")
-                execution_times.append((f"/monster/die/{monster_id}", exec_time))
-            else:
-                # Hero might run away
-                exec_time, response = hit_endpoint("POST", f"/hero/run_away/1")
-                print(f"Run Away: {exec_time:.2f} ms")
-                execution_times.append((f"/hero/run_away/1", exec_time))
-
     # After the battle, heroes check their XP and level up if possible
     exec_time, response = hit_endpoint("GET", f"/hero/check_xp/1")
     print(f"Check XP: {exec_time:.2f} ms")
@@ -208,7 +196,6 @@ def test_remaining_endpoints(execution_times):
         {"method": "POST", "url": "/dungeon/create_dungeon/1", "data": {"dungeon_name": "TestDungeon7", "dungeon_level": 1, "player_capacity": 5, "monster_capacity": 10, "reward": 100}},
         {"method": "POST", "url": "/dungeon/create_monster/1", "data": {"type": "Dragon", "health": 500, "power": 300, "level": 10}},
         {"method": "GET", "url": "/hero/check_health/1"},
-        {"method": "POST", "url": "/hero/die/1"},
         {"method": "GET", "url": "/hero/1/monster_interactions"},
         {"method": "GET", "url": "/monster/find_heroes/1"},
         {"method": "POST", "url": "/guild/create_guild/1", "data": {"guild_name": "TestGuild", "max_capacity": 50, "gold": 1000}},

@@ -163,6 +163,16 @@ def view_pending_requests(hero_id: int):
 
 @router.post("/accept_request/{hero_id}", response_model=SuccessResponse)
 def accept_request(hero_id: int, guild_name: str):
+    """
+    Accept a pending request for a hero to join a guild.
+
+    Args:
+        hero_id (int): The ID of the hero.
+        guild_name (str): The name of the guild.
+
+    Returns:
+        SuccessResponse: Indicates whether the request was accepted.
+    """
     sql_to_execute = sqlalchemy.text("""
     WITH guild_info AS (
         SELECT g.id AS guild_id, g.player_capacity
@@ -197,6 +207,16 @@ def accept_request(hero_id: int, guild_name: str):
 
 @router.post("/attack_monster/{hero_id}", response_model=SuccessResponse)
 def attack_monster(hero_id: int, monster_id: int):
+    """
+    Attack a monster with a hero.
+
+    Args:
+        hero_id (int): The ID of the hero.
+        monster_id (int): The ID of the monster.
+
+    Returns:
+        SuccessResponse: Indicates whether the attack was successful.
+    """
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text("""
             SELECT m.health AS monster_health, h.power AS hero_power
@@ -272,6 +292,16 @@ def run_away(hero_id: int):
 
 @router.get("/find_monsters/{dungeon_id}", response_model=list[Monster])
 def find_monsters(dungeon_id: int):
+    """
+    Find monsters in a specific dungeon.
+
+    Args:
+        dungeon_id (int): The ID of the dungeon.
+
+    Returns:
+        List[Monster]: List of monsters found in the specified dungeon.
+    """
+    
     sql_to_execute = """
     SELECT id, type AS name, level, health, power
     FROM monster

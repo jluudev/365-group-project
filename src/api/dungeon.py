@@ -146,6 +146,20 @@ def create_monster(dungeon_id: int, monsters: List[Monster]):
 
 @router.post("/collect_bounty/{guild_id}", response_model=GoldResponse)
 def collect_bounty(guild_id: int, dungeon_id: int):
+    """
+    Collect the bounty from a completed dungeon.
+
+    Args: 
+        guild_id (int): The ID of the guild collecting the bounty.
+        dungeon_id (int): The ID of the dungeon to collect the bounty from.
+
+    Returns:
+        GoldResponse: Indicates whether the bounty collection was successful.
+
+    Raises:
+        HTTPException: If the dungeon status is not completed or attempting to collect bounty from a completed/open dungeon.
+    """
+
     # Check if the dungeon status is completed
     with db.engine.begin() as connection:
         dungeon_status = connection.execute(
@@ -197,6 +211,17 @@ def collect_bounty(guild_id: int, dungeon_id: int):
 
 @router.get("/assess_damage/{dungeon_id}", response_model=list[Hero])
 def assess_damage(guild_id: int, dungeon_id: int):
+    """
+    Assess the damage of heroes in a specific dungeon.
+
+    Args:
+        guild_id (int): The ID of the guild.
+        dungeon_id (int): The ID of the dungeon.
+
+    Returns:
+        List[Hero]: List of heroes with health <= 0 in the specified dungeon.
+    """
+
     sql_to_execute = """
     SELECT name, level, power, health
     FROM hero

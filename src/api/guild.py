@@ -107,6 +107,15 @@ def recruit_hero(guild_id: int, hero: Hero):
 
 @router.get("/available_heroes/{guild_id}", response_model=list[HeroDetails])
 def available_heroes(guild_id: int):
+    """
+    Get available heroes in a guild.
+
+    Args:
+        guild_id (int): The ID of the guild to get available heroes from.
+
+    Returns:
+        List[HeroDetails]: List of available heroes in the specified guild.
+    """
     with db.engine.begin() as connection:
         result = connection.execute(
             sqlalchemy.text("""
@@ -123,6 +132,17 @@ def available_heroes(guild_id: int):
 
 @router.post("/remove_heroes/{guild_id}", response_model=SuccessResponse)
 def remove_heroes(guild_id: int, heroes: list[Hero]):
+    """
+    Remove dead heroes from a guild.
+
+    Args:
+        guild_id (int): The ID of the guild from which to remove dead heroes.
+        heroes (list[Hero]): The list of heroes to remove.
+
+    Returns:
+        SuccessResponse: Indicates whether the dead heroes were successfully removed.
+    """
+
     hero_names = [hero.hero_name for hero in heroes]
     with db.engine.begin() as connection:
         result = connection.execute(
@@ -138,6 +158,18 @@ def remove_heroes(guild_id: int, heroes: list[Hero]):
 
 @router.post("/send_party/{guild_id}", response_model=SuccessResponse)
 def send_party(guild_id: int, party: list[Hero], dungeon_name: str):
+    """
+    Send a party of heroes to a dungeon.
+
+    Args:
+        guild_id (int): The ID of the guild sending the party.
+        party (list[Hero]): The list of heroes in the party.
+        dungeon_name (str): The name of the dungeon to send the party to.
+
+    Returns:
+        SuccessResponse: Indicates whether the party was successfully sent to the dungeon.
+    """
+
     # Check if the guild exists
     guild_query = sqlalchemy.text("SELECT * FROM guild WHERE id = :guild_id FOR UPDATE")
     with db.engine.begin() as connection:

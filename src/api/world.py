@@ -135,6 +135,15 @@ def create_hero(world_id: int, hero: Hero):
 
 @router.post("/age_hero/{hero_id}", response_model=SuccessResponse)
 def age_hero(hero_id: int):
+    """
+    Age a hero by 1 year.
+
+    Args:
+        hero_id (int): The ID of the hero to be aged.
+
+    Returns:
+        SuccessResponse: Indicates whether the hero was successfully aged.
+    """
     sql_to_execute = """
     UPDATE hero
     SET age = age + 1
@@ -143,12 +152,18 @@ def age_hero(hero_id: int):
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text(sql_to_execute), {"hero_id": hero_id})
         if result.rowcount > 0:
-            return {"success": True}
+            return SuccessResponse(success=True, message="Hero aged successfully")
         else:
-            return {"success": False, "message": "Hero not found"}
+            raise HTTPException(status_code = 404, detail = "Failed to age hero")
         
 @router.get("/get_worlds", response_model=list[dict])
 def get_worlds():
+    """
+    Get a list of all worlds.
+
+    Returns:
+        List[dict]: List of all worlds.
+    """
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text("SELECT id, name FROM world"))
         worlds = [{"id": row.id, "name": row.name} for row in result.fetchall()]
