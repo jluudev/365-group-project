@@ -15,8 +15,8 @@ Creates a guild in the world. The guild may be denied from being created if ther
 [
     {
         "guild_name": "string",
-        "max_capacity": "number",
-        "gold": "number",
+        "max_capacity": "int",
+        "gold": "int",
     }
 ]
 ```
@@ -36,10 +36,10 @@ Shares all the available heroes in the world.
 [
     {
         "hero_name":"string",
-        "level":"number",
-        "power":"number",
-        "age":"number",
-        "cost":"number"
+        "level":"int",
+        "power":"int",
+        "age":"int",
+        "cost":"int"
     }
 ]
 ```
@@ -74,10 +74,10 @@ Creates a dungeon in the world. Errors if there is a dungeon with the same name.
 [
     {
         "dungeon_name": "string",
-        "player_capacity": "number",
-        "monster_capacity":"number",
-        "dungeon_level": "number",
-        "reward": "number",
+        "player_capacity": "int",
+        "monster_capacity":"int",
+        "dungeon_level": "int",
+        "reward": "int",
     }
 ]
 ```
@@ -127,7 +127,7 @@ Shares all the available dungeons to be raided in the world
 [
     {
         "dungeon_name": "string",
-        "level": "number",
+        "level": "int",
     }
 ]
 ```
@@ -140,9 +140,9 @@ Shares all available heroes in the guild
 [
     {
         "hero_name": "string",
-        "level": "number",
-        "power": "number",
-        "age": "number",
+        "level": "int",
+        "power": "int",
+        "age": "int",
     }
 ]
 ```
@@ -175,7 +175,7 @@ Collects the gold alloted for the guild from the dungeon raid
 
 ```json
 {
-    "gold": "number"
+    "gold": "int"
 }
 ```
 
@@ -188,14 +188,14 @@ Gets a list of heroes that died in action from the raid
 [
     {
         "hero_name": "string",
-        "level": "number",
-        "power": "number",
-        "age": "number",
+        "level": "int",
+        "power": "int",
+        "age": "int",
     }
 ]
 ```
 
-### 3.6 Remove Dead Heroes - `/guild/remove_heroes/{guild_id}` (POST)
+### 3.6 Remove Dead Heroes - `/guild/remove_dead_heroes/{guild_id}` (POST)
 Removes dead heroes from the guild
 
 **Request**:
@@ -238,8 +238,8 @@ If the heroes are not yet in a guild, they will call the below as well.
     {
         "name" : "string",
         "role": "string",
-        "level": "number",
-        "age": "number",
+        "level": "int",
+        "age": "int",
     }
 ]
 ```
@@ -264,7 +264,7 @@ If the heroes are not yet in a guild, they will call the below as well.
 ***Response***:
 ```json
 {
-    "xp": "number"
+    "xp": "int"
 }
 ```
 ### 4.4 Raise Level - `/hero/raise_level/{hero_id}` (POST)
@@ -282,8 +282,8 @@ If the heroes are not yet in a guild, they will call the below as well.
 [
     {
         "guild_name":"string",
-        "rank":"number",
-        "gold":"number" 
+        "rank":"int",
+        "gold":"int" 
     }
 ]
 ```
@@ -323,10 +323,10 @@ This may occur if a hero runs out of health.
 ```json
 [
     {
-        "id":"number",
+        "id":"int",
         "name" : "string",
-        "level": "number",
-        "power": "number",
+        "level": "int",
+        "power": "int",
     }
 ]
 ```
@@ -335,7 +335,7 @@ This may occur if a hero runs out of health.
 **Request**:
 ```json
 {
-    "monster_id":"number",
+    "monster_id":"int",
 }
 ```
 
@@ -351,7 +351,7 @@ This may occur if a hero runs out of health.
 **Response**:
 ```json
 {
-    "health": "number"
+    "health": "int"
 }
 ```
 ### 5.4 Run Away - `/hero/run_away/{hero_id}/` (POST)
@@ -387,10 +387,10 @@ This can occur if a monster is killed by a hero.
 ```json
 [
     {
-        "id":"number",
+        "id":"int",
         "name" : "string",
-        "level": "number",
-        "power": "number",
+        "level": "int",
+        "power": "int",
     }
 ]
 ```
@@ -400,7 +400,7 @@ This can occur if a monster is killed by a hero.
 **Request**:
 ```json
 {
-    "hero_id":"number",
+    "hero_id":"int",
 }
 ```
 
@@ -432,19 +432,19 @@ Provides detailed insights into a hero's interactions with monsters, including m
 ```json
 {
     "status": "boolean",
-    "hero_id": "number",
-    "total_battles": "number",
-    "monsters_defeated": "number",
-    "total_damage_dealt": "number",
+    "hero_id": "int",
+    "total_battles": "int",
+    "monsters_defeated": "int",
+    "total_damage_dealt": "int",
     "battle_details": [
         {
-            "monster_id": "number",
+            "monster_id": "int",
             "monster_type": "string",
-            "monster_level": "number",
-            "initial_health": "number",
-            "remaining_health": "number",
-            "damage_dealt": "number",
-            "monster_power": "number",
+            "monster_level": "int",
+            "initial_health": "int",
+            "remaining_health": "int",
+            "damage_dealt": "int",
+            "monster_power": "int",
             "battle_time": "timestamp",
             "monster_defeated": "boolean"
         }
@@ -461,12 +461,12 @@ Provides a leaderboard ranking guilds based on their total gold, the number of h
     "status": "boolean",
     "leaderboard": [
         {
-            "rank": "number",
-            "guild_id": "number",
+            "rank": "int",
+            "guild_id": "int",
             "guild_name": "string",
-            "guild_gold": "number",
-            "hero_count": "number",
-            "avg_hero_power": "number"
+            "guild_gold": "int",
+            "hero_count": "int",
+            "avg_hero_power": "int"
         }
     ]
 }

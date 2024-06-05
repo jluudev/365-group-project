@@ -85,11 +85,11 @@ INSERT INTO hero (name, power, health, age, guild_id, world_id, level, xp) VALUE
     ('Charlotte', 10, 50, 45, 1, 1, 10, 0)
 ;
 
--- Insert dead heroes that are still status = alive for testing
-INSERT INTO hero (name, power, health, age, guild_id, dungeon_id, world_id, level, xp, status) VALUES
-    ('Dead1', 10, 0, 100, 1, 1, 1, 1, 0, 'alive'),
-    ('Dead2', 10, 0, 100, 1, 1, 1, 1, 0, 'alive'),
-    ('Dead3', 10, 0, 100, 1, 1, 1, 1, 0, 'alive')
+-- Insert dead heroes for testing
+INSERT INTO hero (name, power, health, age, guild_id, dungeon_id, world_id, level, xp) VALUES
+    ('Dead1', 10, 0, 100, 1, 1, 1, 1, 0),
+    ('Dead2', 10, 0, 100, 1, 1, 1, 1, 0),
+    ('Dead3', 10, 0, 100, 1, 1, 1, 1, 0)
 ;
 
 -- Insert hero party to a dungeon
