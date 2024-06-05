@@ -21,7 +21,7 @@ sequenceDiagram
 
 ### Case 2: Non-Repeatable Read
 
-**Scenario**: The `/dungeon/assess_damage/{dungeon_id}/` endpoint reads the list of dead heroes in a dungeon. The `/guild/remove_heroes/{guild_id}/` endpoint removes dead heroes from the guild and commits. When `/dungeon/assess_damage/{dungeon_id}/` reads the list again, it gets a different result.
+**Scenario**: The `/dungeon/assess_damage/{dungeon_id}/` endpoint reads the list of dead heroes in a dungeon. The `/guild/remove_dead_heroes/{guild_id}/` endpoint removes dead heroes from the guild and commits. When `/dungeon/assess_damage/{dungeon_id}/` reads the list again, it gets a different result.
 
 **Sequence Diagram**:
 
@@ -29,7 +29,7 @@ sequenceDiagram
 sequenceDiagram
     participant AssessDamage as /dungeon/assess_damage/{dungeon_id}/
     participant DB as Database
-    participant RemoveHeroes as /guild/remove_heroes/{guild_id}/
+    participant RemoveHeroes as /guild/remove_dead_heroes/{guild_id}/
     Note over AssessDamage, RemoveHeroes: Initial state: 3 dead heroes in the dungeon
     AssessDamage->>DB: SELECT * FROM hero WHERE dungeon_id = 1 AND health <= 0 (returns 3 heroes)
     RemoveHeroes->>DB: DELETE FROM hero WHERE guild_id = 1 AND health <= 0

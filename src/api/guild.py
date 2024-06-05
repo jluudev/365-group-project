@@ -151,13 +151,14 @@ def available_heroes(guild_id: int):
         ]
     return heroes
 
-# Remove Dead Heroes - /guild/remove_heroes/{guild_id} (POST)
-@router.post("/remove_heroes/{guild_id}")
-def remove_heroes(guild_id: int, heroes: list[Hero]):
+# Remove Dead Heroes - /guild/remove_dead_heroes/{guild_id} (POST)
+@router.post("/remove_dead_heroes/{guild_id}")
+def remove_dead_heroes(guild_id: int, heroes: list[Hero]):
     '''
-    Removes a hero from a guild\n
+    Removes dead heroes from a guild\n
     Takes: guild_id (int), list[Hero]\n
     Returns: boolean on success or failure of removals
+    Having them list heroes rather than removing all dead heroes gives them time to morn :(
     '''
 
     hero_names = [hero.hero_name for hero in heroes]

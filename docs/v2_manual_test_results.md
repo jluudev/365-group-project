@@ -6,7 +6,7 @@ Mages Only believes they have heroes strong enough to clear the dungeon, so they
 - they find three available heroes that seem like they can clear the dungeon and call `POST /guild/send_party/{guild_id}` passing in the dungeon name of "Watcher's Keep" as well as the party of heroes.
 - let's say after some time, the dungeon is cleared (see Example Flow #3), then the guild can call `POST /dungeon/collect_bounty/{guild_id}` to collect their reward
 - Mages Only also needs to find out whether any hero died after the dungeon, so they call `GET /dungeon/assess_damage/{dungeon_id}`
-- they learn that Wizard101 died, so they remove them by calling `POST /guild/remove_heroes/{guild_id}` passing in the heroes
+- they learn that Wizard101 died, so they remove them by calling `POST /guild/remove_dead_heroes/{guild_id}` passing in the heroes
 
 Now, Mages Only can continue sending more heroes out to clear dungeons and rake in some gold.
 
@@ -132,11 +132,11 @@ Response body:
 ]
 ```
 
-6. `POST /guild/remove_heroes/{guild_id}`
+6. `POST /guild/remove_dead_heroes/{guild_id}`
 
 ```
 curl -X 'POST' \
-  'https://arthurslastcrusade.onrender.com/guild/remove_heroes/1' \
+  'https://arthurslastcrusade.onrender.com/guild/remove_dead_heroes/1' \
   -H 'accept: application/json' \
   -H 'access_token: 4888d45f8ecd9127e7b5aef96fb5f934' \
   -H 'Content-Type: application/json' \
