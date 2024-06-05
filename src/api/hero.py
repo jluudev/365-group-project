@@ -56,6 +56,16 @@ class HeroMonsterInteractionsResponse(BaseModel):
 
 @router.get("/check_xp/{hero_id}", response_model=HeroXP)
 def check_xp(hero_id: int):
+    """
+    Check the experience points (XP) of a hero.
+
+    Args:
+        hero_id (int): The ID of the hero.
+
+    Returns:
+        HeroXP: The experience points of the hero.
+    """
+
     with db.engine.begin() as connection:
         xp = connection.execute(sqlalchemy.text("""
             SELECT xp
@@ -66,6 +76,16 @@ def check_xp(hero_id: int):
 
 @router.post("/raise_level/{hero_id}", response_model=SuccessResponse)
 def raise_level(hero_id: int):
+    """
+    Raise the level of a hero if they have enough experience points.
+
+    Args:
+        hero_id (int): The ID of the hero.
+
+    Returns:
+        SuccessResponse: Indicates whether the level raise was successful.
+    """
+
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text("""
             UPDATE hero
@@ -79,6 +99,15 @@ def raise_level(hero_id: int):
 
 @router.get("/view_pending_requests/{hero_id}", response_model=list[PendingRequest])
 def view_pending_requests(hero_id: int):
+    """
+    View pending requests for a hero.
+
+    Args:
+        hero_id (int): The ID of the hero.
+
+    Returns:
+        List[PendingRequest]: List of pending requests for the hero.
+    """
     requests = []
     with db.engine.begin() as connection:
         recruit = connection.execute(sqlalchemy.text("""
@@ -158,6 +187,16 @@ def attack_monster(hero_id: int, monster_id: int):
 
 @router.get("/check_health/{hero_id}", response_model=HealthResponse)
 def check_health(hero_id: int):
+    """
+    Check the health of a hero.
+
+    Args:
+        hero_id (int): The ID of the hero.
+
+    Returns:
+        HealthResponse: The current health of the hero.
+    """
+    
     with db.engine.begin() as connection:
         health = connection.execute(sqlalchemy.text("""
             SELECT health
@@ -223,6 +262,16 @@ def find_monsters(dungeon_id: int):
 
 @router.get("/{hero_id}/monster_interactions", response_model=HeroMonsterInteractionsResponse)
 def hero_monster_interactions(hero_id: int):
+    """
+    Get the battle history of a hero.
+
+    Args:
+        hero_id (int): The ID of the hero.
+
+    Returns:
+        HeroMonsterInteractionsResponse: The battle history details of the hero.
+    """
+
     sql_monster_interactions = """
     WITH hero_battles AS (
         SELECT

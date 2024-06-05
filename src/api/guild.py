@@ -45,6 +45,17 @@ class LeaderboardResponse(BaseModel):
 
 @router.post("/create_guild/{world_id}", response_model=SuccessResponse)
 def create_guild(world_id: int, guild: Guild):
+    """
+    Create a new guild in the specified world.
+
+    Args:
+        world_id (int): The ID of the world where the guild will be created.
+        guild (Guild): The details of the guild to be created.
+
+    Returns:
+        SuccessResponse: Indicates whether the guild was successfully created.
+    """
+
     sql_to_execute = sqlalchemy.text("""
     INSERT INTO guild (name, player_capacity, gold, world_id)
     VALUES (:name, :max_capacity, :gold, :world_id);
@@ -63,6 +74,17 @@ def create_guild(world_id: int, guild: Guild):
 
 @router.post("/recruit_hero/{guild_id}", response_model=SuccessResponse)
 def recruit_hero(guild_id: int, hero: Hero):
+    """
+    Recruit a hero to a guild.
+
+    Args:
+        guild_id (int): The ID of the guild where the hero will be recruited.
+        hero (Hero): The details of the hero to be recruited.
+
+    Returns:
+        SuccessResponse: Indicates whether the hero recruitment was successful.
+    """
+
     sql_to_execute = sqlalchemy.text("""
     INSERT INTO recruitment (hero_id, guild_id, status, request_date)
     SELECT id, :guild_id, 'pending', now() 
@@ -138,6 +160,13 @@ def send_party(guild_id: int, party: list[Hero], dungeon_name: str):
 
 @router.get("/leaderboard", response_model=LeaderboardResponse)
 def get_leaderboard():
+    """
+    Get the guild leaderboard.
+
+    Returns:
+        LeaderboardResponse: The current leaderboard with guild rankings.
+    """
+    
     sql_leaderboard = """
     WITH guild_stats AS (
         SELECT 

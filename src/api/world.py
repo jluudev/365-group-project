@@ -39,6 +39,15 @@ class SuccessResponse(BaseModel):
 
 @router.get("/view_heroes/{world_id}", response_model=list[HeroView])
 def view_heroes(world_id: int):
+    """
+    View heroes not in a guild in a specific world.
+
+    Args:
+        world_id (int): The ID of the world.
+
+    Returns:
+        List[HeroView]: List of heroes in the specified world.
+    """
     heroes = []
     with db.engine.begin() as connection:
         sql_to_execute = """
@@ -57,6 +66,15 @@ def view_heroes(world_id: int):
 
 @router.get("/get_quests/{world_id}", response_model=list[DungeonQuest])
 def get_quests(world_id: int):
+    """
+    Get quests (open dungeons) available in a specific world.
+
+    Args:
+        world_id (int): The ID of the world.
+
+    Returns:
+        List[DungeonQuest]: List of quests available in the specified world.
+    """
     with db.engine.connect() as connection:
         result = connection.execute(
             sqlalchemy.text("""SELECT id, name, level FROM dungeon WHERE world_id = :world_id AND status = 'open'"""),
@@ -70,6 +88,16 @@ def get_quests(world_id: int):
 
 @router.post("/create_hero/{world_id}", response_model=SuccessResponse)
 def create_hero(world_id: int, hero: Hero):
+    """
+    Create a new hero in a specific world.
+
+    Args:
+        world_id (int): The ID of the world where the hero will be created.
+        hero (Hero): The details of the hero to be created.
+
+    Returns:
+        SuccessResponse: Indicates whether the hero creation was successful.
+    """
     sql_to_execute = sqlalchemy.text("""
     INSERT INTO hero (name, class, level, age, power, health, xp, world_id)
     VALUES (:name, :classType, :level, :age, :power, :health, :xp, :world_id);
