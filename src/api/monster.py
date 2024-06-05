@@ -70,35 +70,3 @@ def attack_hero(hero_id: int, monster_id: int):
             return {"success": True}
         else:
             return {"success": False, "message": "Hero not found"}
-
-
-# Die - /monster/die/{monster_id} (GET)
-@router.post("/die/{monster_id}")
-def die(monster_id: int):
-    '''
-    Sets the status of monster to dead and removes prior targeting of heroes\n
-    Takes: monster_id (int)\n
-    Returns: boolean on success or failure
-    '''
-
-    sql_delete_monster = """
-    WITH deleted_targeting AS (
-        DELETE FROM targeting
-        WHERE monster_id = :monster_id
-        RETURNING *
-    ),
-    deleted_monster AS (
-        DELETE FROM monster
-        WHERE id = :monster_id AND health <= 0
-        RETURNING *
-    )
-    SELECT * FROM deleted_monster;
-    """
-    with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text(sql_delete_monster), {"monster_id": monster_id})
-        deleted_monster = result.fetchone()
-
-    if deleted_monster:
-        return {"success": True}
-    else:
-        return {"success": False, "message": "Monster is still alive or not found"}

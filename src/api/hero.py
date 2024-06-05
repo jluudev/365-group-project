@@ -67,7 +67,7 @@ def raise_level(hero_id: int):
             updated_hero.level as updated_level
         FROM hero
         LEFT JOIN updated_hero ON updated_hero.id = hero.id
-        """), [{"hero_id": hero_id}])
+        """), {"hero_id": hero_id})
 
         if result.rowcount == 0:
             return {"success": False, "message": "No hero matching id %d" % hero_id}
@@ -92,7 +92,7 @@ def view_pending_requests(hero_id: int):
         ("""SELECT name, gold 
         FROM recruitment 
         JOIN guild ON recruitment.guild_id = guild.id 
-        WHERE recruitment.hero_id = :id"""), [{"id": hero_id}])
+        WHERE recruitment.hero_id = :id"""), {"id": hero_id})
 
         for request in recruit:
             requests.append({
@@ -246,34 +246,6 @@ def run_away(hero_id: int):
                 return {"success": False, "message": "Failed to update hero's location"}
     
 
-# Die - /hero/die/{hero_id}/ (POST)
-@router.post("/die/{hero_id}")
-def die(hero_id: int):
-    '''
-    Sets the status of hero to dead and removes prior targeting of monsters\n
-    Takes: hero_id (int)\n
-    Returns: boolean on success or failure
-    '''
-
-    with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text
-        ("""
-        UPDATE hero
-        SET status = 'dead'
-        WHERE id = :hero_id AND health <= 0
-        """), [{"hero_id": hero_id}])
-
-        # remove any targeting
-        connection.execute(sqlalchemy.text
-        ("""
-        DELETE FROM targeting
-        WHERE hero_id = :hero_id
-        """), [{"hero_id": hero_id}])
-
-        if result.rowcount > 0:
-            return {"success": True}
-        else:
-            return {"success": False, "message": "Hero is still alive or not found"}
 
 # Find Monsters - /hero/find_monsters/{dungeon_id}/ (GET)
 @router.get("/find_monsters/{dungeon_id}")

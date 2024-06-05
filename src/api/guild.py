@@ -87,7 +87,7 @@ def create_guild(world_id: int, guild: Guild):
 
 # Recruit Hero - /guild/recruit_hero/{guild_id} (POST)
 @router.post("/recruit_hero/{guild_id}")
-def recruit_hero(guild_id: int, hero: Hero):
+def recruit_hero(guild_id: int, hero: Hero, message: str):
     '''
     Sends out a recruitment request to a hero from a specified guild_id\n
     Takes: guild_id (int), Hero (hero_name)\n
@@ -97,8 +97,8 @@ def recruit_hero(guild_id: int, hero: Hero):
     sql_to_execute = sqlalchemy.text(
     """
     WITH insertion AS (
-        INSERT INTO recruitment (hero_id, guild_id, status, request_date)
-        SELECT id, :guild_id, 'pending', now() 
+        INSERT INTO recruitment (hero_id, guild_id, status, request_date, notes)
+        SELECT id, :guild_id, 'pending', now(), :message
         FROM hero 
         WHERE name = :hero_name AND guild_id IS NULL AND world_id = (SELECT world_id FROM guild WHERE id = :guild_id)
         RETURNING hero_id, (SELECT world_id FROM guild WHERE id = 4)             
@@ -117,13 +117,12 @@ def recruit_hero(guild_id: int, hero: Hero):
         raise HTTPException(status_code = 404, detail = "Hero is not specified")
 
     with db.engine.begin() as connection:
-        result = connection.execute(sql_to_execute, {'hero_name': hero.hero_name, 'guild_id': guild_id})
+        result = connection.execute(sql_to_execute, {'hero_name': hero.hero_name, 'guild_id': guild_id, 'message': message})
         if result.rowcount == 0:
             raise HTTPException(status_code = 404, detail = "Hero %s does not exist" % hero.hero_name)
         result = result.one()
         if result.guild_id != None:
             return {"success": False, "message": "Hero already in guild %d" % result.guild_id}
-            # raise HTTPException(status_code = 404, detail = "Hero already in guild %d" % result.guild_id)
         if result.guild_world_id == None:
             return {"success": False, "message": "Hero is not in proper world_id of guild, Hero located in world %d" % result.hero_world_id}
         return {"success": True}
@@ -146,7 +145,7 @@ def available_heroes(guild_id: int):
             """), {"guild_id": guild_id}
         )
         heroes = [
-            {"hero_name": row[0], "power": row[1], "health": row[2], "level": row[3]} 
+            {"hero_name": row.name, "power": row.power, "health": row.health, "level": row.level} 
             for row in result.fetchall()
         ]
     return heroes
