@@ -20,7 +20,7 @@ Mages Only believes they have heroes strong enough to clear the dungeon, so they
 - they find five available heroes that seem like they can clear the dungeon and call `POST /guild/send_party/{guild_id}` passing in the dungeon name of "Watcher's Keep" as well as the party of heroes.
 - let's say after some time, the dungeon is cleared (see Example Flow #3), then the guild can call `POST /dungeon/collect_bounty/{guild_id}` to collect their reward
 - Mages Only also needs to find out whether any hero died after the dungeon, so they call `GET /dungeon/assess_damage/{dungeon_id}`
-- they learn that Bob the Mage and Sarah the Sorceress died, so they remove them by calling `/guild/remove_heroes/{guild_id}` passing in those two heroes
+- they learn that Bob the Mage and Sarah the Sorceress died, so they remove them by calling `/guild/remove_dead_heroes/{guild_id}` passing in those two heroes
 
 Now, Mages Only can continue sending more heroes out to clear dungeons and rake in some gold.
 

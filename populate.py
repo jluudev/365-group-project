@@ -75,7 +75,6 @@ with engine.begin() as conn:
         xp INT DEFAULT 0,
         age INT DEFAULT 20,
         level INT DEFAULT 1,
-        status TEXT DEFAULT 'alive',
         guild_id BIGINT REFERENCES guild(id),
         dungeon_id BIGINT REFERENCES dungeon(id),
         world_id BIGINT REFERENCES world(id)
@@ -180,17 +179,16 @@ with engine.begin() as conn:
                 "name": name,
                 "class": fake.random_element(elements=["Warrior", "Mage", "Archer"]),
                 "power": fake.random_int(min=1, max=100),
-                "health": fake.random_int(min=0, max=1000),  # Allow health to be 0 (dead)
+                "health": fake.random_int(min=0, max=1000),
                 "xp": fake.random_int(min=0, max=10000),
                 "level": fake.random_int(min=1, max=100),
-                "status": fake.random_element(elements=["alive", "dead"]),
                 "guild_id": fake.random_element(elements=guild_ids).id if fake.boolean(80) else None,  # 20% chance to be guildless
                 "dungeon_id": fake.random_element(elements=dungeon_ids).id,
                 "world_id": fake.random_element(elements=world_ids).id
             })
     conn.execute(sqlalchemy.text("""
-    INSERT INTO hero (name, class, power, health, xp, level, status, guild_id, dungeon_id, world_id) 
-    VALUES (:name, :class, :power, :health, :xp, :level, :status, :guild_id, :dungeon_id, :world_id)
+    INSERT INTO hero (name, class, power, health, xp, level, guild_id, dungeon_id, world_id) 
+    VALUES (:name, :class, :power, :health, :xp, :level, :guild_id, :dungeon_id, :world_id)
     """), heroes)
 
     # Get hero and monster IDs for targeting
