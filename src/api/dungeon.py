@@ -65,7 +65,7 @@ def create_dungeon(world_id: int, dungeon: Dungeon):
         raise HTTPException(status_code = 400, detail = "Invalid Reward")
     if world_id < 0:
         raise HTTPException(status_code = 400, detail = "Invalid World Id")
-
+        
     sql_to_execute = sqlalchemy.text("""
     INSERT INTO dungeon (name, level, party_capacity, monster_capacity, gold_reward, world_id)
     VALUES (:name, :level, :player_capacity, :monster_capacity, :reward, :world_id);

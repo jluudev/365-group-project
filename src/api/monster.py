@@ -63,7 +63,7 @@ def attack_hero(hero_id: int, monster_id: int):
     Returns:
         SuccessResponse: Indicates whether the attack was successful.
     """
-
+    
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text("""
             UPDATE hero
