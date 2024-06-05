@@ -111,6 +111,7 @@ def collect_bounty(guild_id: int, dungeon_id: int):
         UPDATE dungeon
         SET status = 'completed'
         WHERE id = :dungeon_id
+        AND NOT EXISTS (SELECT 1 FROM monster WHERE dungeon_id = :dungeon_id AND health > 0)
         RETURNING id
     ),
     hero_update AS (
@@ -121,7 +122,7 @@ def collect_bounty(guild_id: int, dungeon_id: int):
     )
     SELECT * FROM guild_update;
     """)
-    
+
     with db.engine.begin() as connection:
         result = connection.execute(sql_to_execute, {"dungeon_id": dungeon_id, "guild_id": guild_id})
         if result.rowcount > 0:
