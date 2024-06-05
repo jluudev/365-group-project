@@ -1,0 +1,7 @@
+- create hero error handling
+- better errors for recruit hero
+- made consistent error handling in guild/send_party
+- Added age and class to hero table to fix insertion errors
+- added docstrings to all function endpoints and class declarations
+- use Pydantic models
+- there were Internal Server Errors due to executing sql without sqlalchemy.text()
