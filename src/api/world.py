@@ -39,8 +39,8 @@ class Hero(BaseModel):
 @router.get("/view_heroes/{world_id}")
 def view_heroes(world_id: int):
     '''
-    Returns all heroes in the selected world
-    Takes: world_id (int)
+    Returns all heroes in the selected world\n
+    Takes: world_id (int)\n
     Returns: list[Hero]
     '''
 
@@ -69,8 +69,8 @@ def view_heroes(world_id: int):
 @router.get("/get_quests/{world_id}")
 def get_quests(world_id : int):
     '''
-    Finds all dungeons that can be raided
-    Takes: world_id (int)
+    Finds all dungeons that can be raided\n
+    Takes: world_id (int)\n
     Returns: list[Dungeon]
     '''
 
@@ -87,8 +87,8 @@ def get_quests(world_id : int):
 @router.post("/create_hero/{world_id}")
 def create_hero(world_id: int, hero: Hero):
     '''
-    Creates a hero in a specified world
-    Takes: world_id (int), Hero
+    Creates a hero in a specified world\n
+    Takes: world_id (int), Hero\n
     Returns: boolean on success or failure
     '''
 
@@ -97,7 +97,7 @@ def create_hero(world_id: int, hero: Hero):
     VALUES (:name, :level, :age, :power, :health, :xp, :world_id)
     """
     if hero.level < 0:
-        raise HTTPException(status_code = 404, deatil = "Invalid Hero Level")
+        raise HTTPException(status_code = 404, detail = "Invalid Hero Level")
     if hero.age < 0:
         raise HTTPException(status_code = 404, detail = "Invalid Hero Age")
     if hero.power < 0:
@@ -124,15 +124,15 @@ def create_hero(world_id: int, hero: Hero):
         if result.rowcount > 0:
             return {"success": True}
         else:
-            return {"success": False, "message": "Hero not created"}
+            return {"success": False, "message": "Error with server request, try again"}
 
 
 # Age Hero - /world/age_hero/{hero_id} (POST)
 @router.post("/age_hero/{hero_id}")
 def age_hero(hero_id: int):
     '''
-    Ages a hero
-    Takes: hero_id (int)
+    Ages a hero\n
+    Takes: hero_id (int)\n
     Returns: boolean on success or failure
     '''
 

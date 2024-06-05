@@ -64,8 +64,8 @@ class Hero(BaseModel):
 @router.post("/create_dungeon/{world_id}")
 def create_dungeon(world_id: int, dungeon: Dungeon):
     '''
-    Creates a Dungeon at specified world_id
-    Takes: world_id (int), Dungeon (dungeon_name, dungeon_level, player_capacity, monster_capacity, reward)
+    Creates a Dungeon at specified world_id\n
+    Takes: world_id (int), Dungeon (dungeon_name, dungeon_level, player_capacity, monster_capacity, reward)\n
     Returns: boolean on success or failure of dungeon creation
     '''
 
@@ -102,8 +102,8 @@ def create_dungeon(world_id: int, dungeon: Dungeon):
 @router.post("/create_monster/{dungeon_id}")
 def create_monster(dungeon_id: int, monsters: Monster):
     '''
-    Creates a monster within the specified dungeon_id
-    Takes: dungeon_id (int), Monster (type, health, power, level)
+    Creates a monster within the specified dungeon_id\n
+    Takes: dungeon_id (int), Monster (type, health, power, level)\n
     Returns: boolean on success or failure of monster creation
     '''
 
@@ -149,8 +149,8 @@ def create_monster(dungeon_id: int, monsters: Monster):
 @router.post("/collect_bounty/{guild_id}")
 def collect_bounty(guild_id: int, dungeon_id: int):
     '''
-    Adds gold from cleared dungeon to guild
-    Takes: guild_id (int), dungeon_id (int)
+    Adds gold from cleared dungeon to guild\n
+    Takes: guild_id (int), dungeon_id (int)\n
     Returns: gold (int) on success, boolean False on failure
     '''
 
@@ -179,8 +179,8 @@ def collect_bounty(guild_id: int, dungeon_id: int):
 @router.get("/assess_damage/{dungeon_id}")
 def assess_damage(guild_id: int, dungeon_id: int):
     '''
-    Get query providing the heroes that survived from a dungeon quest
-    Takes: guild_id (int), dungeon_id (int)
+    Get query providing the heroes that survived from a dungeon quest\n
+    Takes: guild_id (int), dungeon_id (int)\n
     Returns: list[Hero]
     '''
 

@@ -20,8 +20,8 @@ router = APIRouter(
 @router.get("/find_heroes/{dungeon_id}")
 def find_heroes(dungeon_id: int):
     '''
-    Get query returning all heroes in a dungeon
-    Takes: dungeon_id (int)
+    Get query returning all heroes in a dungeon\n
+    Takes: dungeon_id (int)\n
     Returns: list[Hero]
     '''
 
@@ -45,8 +45,8 @@ def find_heroes(dungeon_id: int):
 @router.post("/attack_hero/{monster_id}")
 def attack_hero(hero_id: int, monster_id: int):
     '''
-    Monster deals damage to a hero
-    Takes: hero_id (int), monster_id (int)
+    Monster deals damage to a hero\n
+    Takes: hero_id (int), monster_id (int)\n
     Returns: boolean on success or failure
     '''
 
@@ -76,8 +76,8 @@ def attack_hero(hero_id: int, monster_id: int):
 @router.post("/die/{monster_id}")
 def die(monster_id: int):
     '''
-    Sets the status of monster to dead and removes prior targeting of heroes
-    Takes: monster_id (int)
+    Sets the status of monster to dead and removes prior targeting of heroes\n
+    Takes: monster_id (int)\n
     Returns: boolean on success or failure
     '''
 

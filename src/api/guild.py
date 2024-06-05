@@ -41,8 +41,8 @@ class Guild(BaseModel):
 @router.post("/create_guild/{world_id}")
 def create_guild(world_id: int, guild: Guild):
     '''
-    Creates a guild at specified world_id
-    Takes: world_id (int), Guild (guild_name, max_capacity, gold)
+    Creates a guild at specified world_id\n
+    Takes: world_id (int), Guild (guild_name, max_capacity, gold)\n
     Returns: boolean on success or failure of guild creation
     '''
 
@@ -73,33 +73,51 @@ def create_guild(world_id: int, guild: Guild):
 @router.post("/recruit_hero/{guild_id}")
 def recruit_hero(guild_id: int, hero: Hero):
     '''
-    Recruits a hero to a specified guild_id
-    Takes: guild_id (int), Hero (hero_name)
+    Sends out a recruitment request to a hero from a specified guild_id\n
+    Takes: guild_id (int), Hero (hero_name)\n
     Returns: boolean on success or failure of recruitment
     '''
 
-    sql_to_execute = sqlalchemy.text("""
-    INSERT INTO recruitment (hero_id, guild_id, status, request_date)
-    SELECT id, :guild_id, 'pending', now() 
-    FROM hero 
-    WHERE name = :hero_name AND guild_id IS NULL AND world_id = (SELECT world_id FROM guild WHERE id = :guild_id);
+    sql_to_execute = sqlalchemy.text(
+    """
+    WITH insertion AS (
+        INSERT INTO recruitment (hero_id, guild_id, status, request_date)
+        SELECT id, :guild_id, 'pending', now() 
+        FROM hero 
+        WHERE name = :hero_name AND guild_id IS NULL AND world_id = (SELECT world_id FROM guild WHERE id = :guild_id)
+        RETURNING hero_id, (SELECT world_id FROM guild WHERE id = 4)             
+    )
+    SELECT
+        hero.id,
+        guild_id,
+        hero.world_id as hero_world_id,
+        insertion.world_id as guild_world_id
+    FROM hero
+    LEFT JOIN guild ON guild.id = hero.guild_id
+    LEFT JOIN insertion ON insertion.hero_id = hero.id
+    WHERE hero.name = :hero_name
     """)
-    if hero is NULL:
-        raise HTTPException(status_code = 404, detail = "Hero not found")
+    if hero is None:
+        raise HTTPException(status_code = 404, detail = "Hero is not specified")
 
     with db.engine.begin() as connection:
         result = connection.execute(sql_to_execute, {'hero_name': hero.hero_name, 'guild_id': guild_id})
-        if result.rowcount > 0:
-            return {"success": True}
-        else:
-            raise HTTPException(status_code = 404, detail = "Hero already in guild")
+        if result.rowcount == 0:
+            raise HTTPException(status_code = 404, detail = "Hero %s does not exist" % hero.hero_name)
+        result = result.one()
+        if result.guild_id != None:
+            return {"success": False, "message": "Hero already in guild %d" % result.guild_id}
+            # raise HTTPException(status_code = 404, detail = "Hero already in guild %d" % result.guild_id)
+        if result.guild_world_id == None:
+            return {"success": False, "message": "Hero is not in proper world_id of guild, Hero located in world %d" % result.hero_world_id}
+        return {"success": True}
 
 # Check Available Heroes - /guild/available_heroes/{guild_id} (GET)
 @router.get("/available_heroes/{guild_id}")
 def available_heroes(guild_id: int):
     '''
-    Get query to view all available heroes
-    Takes: guild_id (int)
+    Get query to view all available heroes\n
+    Takes: guild_id (int)\n
     Returns: list[Hero]
     '''
 
@@ -121,8 +139,8 @@ def available_heroes(guild_id: int):
 @router.post("/remove_heroes/{guild_id}")
 def remove_heroes(guild_id: int, heroes: list[Hero]):
     '''
-    Removes a hero from a guild
-    Takes: guild_id (int), list[Hero]
+    Removes a hero from a guild\n
+    Takes: guild_id (int), list[Hero]\n
     Returns: boolean on success or failure of removals
     '''
 
@@ -143,8 +161,8 @@ def remove_heroes(guild_id: int, heroes: list[Hero]):
 @router.post("/send_party/{guild_id}")
 def send_party(guild_id: int, party: list[Hero], dungeon_name: str):
     '''
-    Sends a party out to a dungeon
-    Takes: guild_id (int), list[Hero], dungeon_name (TEXT)
+    Sends a party out to a dungeon\n
+    Takes: guild_id (int), list[Hero], dungeon_name (TEXT)\n
     Returns: boolean on success or failure
     '''
 
@@ -177,10 +195,10 @@ def send_party(guild_id: int, party: list[Hero], dungeon_name: str):
 @router.get("/leaderboard")
 def get_leaderboard():
     '''
-    Get query that returns a leaderboard of the top guilds
-    Takes:
-    Returns: json response
-        - boolean of success or failure
+    Get query that returns a leaderboard of the top guilds\n
+    Takes:\n
+    Returns: json response\n
+        - boolean of success or failure\n
         - Leaderboard (rank (int),
                     guild_id (int),
                     guild_name (TEXT),
