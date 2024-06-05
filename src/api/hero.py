@@ -268,6 +268,16 @@ def check_health(hero_id: int):
 
 @router.post("/run_away/{hero_id}", response_model=SuccessResponse)
 def run_away(hero_id: int):
+    """
+    Run away from a dungeon. Hero can only run away if they are not being targeted by a monster.
+
+    Args:
+        hero_id (int): The ID of the hero.
+
+    Returns:
+        SuccessResponse: Indicates whether the hero successfully ran away.
+    """
+    
     sql_to_execute = """
     SELECT COUNT(*) 
     FROM targeting 
@@ -301,7 +311,7 @@ def find_monsters(dungeon_id: int):
     Returns:
         List[Monster]: List of monsters found in the specified dungeon.
     """
-    
+
     sql_to_execute = """
     SELECT id, type AS name, level, health, power
     FROM monster
