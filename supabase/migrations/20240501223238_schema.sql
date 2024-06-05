@@ -35,7 +35,7 @@ CREATE TABLE guild (
     name TEXT NOT NULL,
     player_capacity INT,
     gold INT,
-    world_id BIGINT REFERENCES world(id)
+    world_id BIGINT REFERENCES world(id),
     CONSTRAINT unique_guild_name_world_id UNIQUE (name, world_id)
 );
 
