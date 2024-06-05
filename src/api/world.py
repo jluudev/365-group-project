@@ -42,7 +42,7 @@ class Hero(BaseModel):
 @router.get("/view_heroes/{world_id}")
 def view_heroes(world_id: int):
     '''
-    Returns all heroes in the selected world\n
+    Returns all heroes in the selected world not in a guild\n
     Takes: world_id (int)\n
     Returns: list[Hero]
     '''
@@ -50,7 +50,7 @@ def view_heroes(world_id: int):
     heroes = []
     with db.engine.begin() as connection:
         sql_to_execute ="""
-            SELECT name, role, level, power, age, health
+            SELECT name, class AS class_name, level, power, age, health
             FROM hero
             WHERE guild_id IS NULL AND world_id = :world_id;
         """
@@ -60,7 +60,7 @@ def view_heroes(world_id: int):
         for row in result:
             heroes.append({
                 "name": row.name,
-                "role": row.role,
+                "class": row.class_name,
                 "level": row.level,
                 "power": row.power,
                 "age": row.age,
