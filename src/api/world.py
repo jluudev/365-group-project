@@ -29,7 +29,7 @@ class Hero(BaseModel):
         xp: int
     '''
     hero_name: str
-    role: str
+    class_name: str
     level: int
     age: int
     power: int
@@ -97,8 +97,8 @@ def create_hero(world_id: int, hero: Hero):
     '''
 
     sql_to_execute = """
-    INSERT INTO hero (name, role, level, age, power, health, xp, world_id)
-    VALUES (:name, :role, :level, :age, :power, :health, :xp, :world_id)
+    INSERT INTO hero (name, class, level, age, power, health, xp, world_id)
+    VALUES (:name, :class, :level, :age, :power, :health, :xp, :world_id)
     """
     if hero.level < 0:
         raise HTTPException(status_code = 404, detail = "Invalid Hero Level")
@@ -116,7 +116,7 @@ def create_hero(world_id: int, hero: Hero):
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text(sql_to_execute), {
             "name": hero.hero_name,
-            "role": hero.role,
+            "class": hero.class_name,
             "level": hero.level,
             "age": hero.age,
             "power": hero.power,
