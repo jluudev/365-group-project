@@ -1,14 +1,13 @@
-- create hero error handling
-- better errors for recruit hero
 - made consistent error handling in guild/send_party
-- Added age to hero table
+- Added age and class to hero table
 - added docstrings to all function endpoints and class declarations
 - changed accessing of find_heroes' hero data to column selection rather than indexing
 - remove_heroes renamed to remove_dead_heroes to be more reflective of function's purpose
 - the following endpoints have been updated to reflect more informative success and failure messages
-    - create_guild
-    - create_dungeon
-    - create_monster
-    - raise_level
-    - recruit_hero
+    - guild/create_guild
+    - dungeon/create_dungeon
+    - world/create_hero
+    - dungeon/create_monster
+    - hero/raise_level
+    - guild/recruit_hero
 

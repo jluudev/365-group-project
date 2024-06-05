@@ -24,7 +24,8 @@ Creates a guild in the world. The guild may be denied from being created if ther
 
 ```json
 {
-    "success": "boolean"
+    "success": "boolean",
+    "message": "str"
 }
 ```
 
@@ -50,6 +51,8 @@ Recruits a hero.
 ***Request***:
 ```json
 {
+    "guild_id" : "int",
+    "message" : "string",
     "hero_name" : "string"
 }
 ```
@@ -57,7 +60,8 @@ Recruits a hero.
 ***Response***:
 ```json
 {
-    "success": "boolean"
+    "success": "boolean",
+    "message": "str"
 }
 ```
 
@@ -85,7 +89,8 @@ Creates a dungeon in the world. Errors if there is a dungeon with the same name.
 ***Response***:
 ```json
 {
-    "success": "boolean"
+    "success": "boolean",
+    "message": "str"
 }
 ```
 
@@ -104,7 +109,8 @@ Creates a monster within a dungeon.
 ***Response***:
 ```json
 {
-    "success": "boolean"
+    "success": "boolean",
+    "message": "str"
 }
 ```
 
@@ -164,7 +170,8 @@ Sends the party (list of heroes) to be sent to the dungeon. The party may be sen
 
 ```json
 {
-    "success": "boolean"
+    "success": "boolean",
+    "message": "str"
 }
 ```
 
@@ -212,7 +219,8 @@ Removes dead heroes from the guild
 
 ```json
 {
-    "success": "boolean"
+    "success": "boolean",
+    "message": "str"
 }
 ```
 
@@ -248,7 +256,8 @@ If the heroes are not yet in a guild, they will call the below as well.
 
 ```json
 {
-    "success": "boolean"
+    "success": "boolean",
+    "message": "str"
 }
 ```
 ### 4.2 Age Hero - `/world/age_hero/{hero_id}` (POST)
@@ -256,7 +265,8 @@ If the heroes are not yet in a guild, they will call the below as well.
 ***Response***:
 ```json
 {
-    "success": "boolean"
+    "success": "boolean",
+    "message": "str"
 }
 ```
 ### 4.3 Check XP - `/hero/check_xp/{hero_id}` (GET)
@@ -272,7 +282,8 @@ If the heroes are not yet in a guild, they will call the below as well.
 ***Response***:
 ```json
 {
-    "success": "boolean"
+    "success": "boolean",
+    "message": "str"
 }
 ```
 ### 4.5 View Pending Requests - `/hero/view_pending_requests/{hero_id}` (GET)
@@ -298,7 +309,8 @@ If the heroes are not yet in a guild, they will call the below as well.
 ***Response***:
 ```json
 {
-    "success": "boolean"
+    "success": "boolean",
+    "message": "str"
 }
 ```
 
@@ -312,10 +324,6 @@ Heroes may periodically check their health and choose to run away
 
 3. `Check Health`
 4. `Run Away`
-
-This may occur if a hero runs out of health.
-
-5. `Die`
 
 ### 5.1 Find Monsters - `/hero/find_monsters/{dungeon_id}/` (GET)
 
@@ -342,7 +350,8 @@ This may occur if a hero runs out of health.
 **Response**:
 ```json
 {
-    "success": "boolean"
+    "success": "boolean",
+    "message": "str"
 }
 ```
 
@@ -359,27 +368,15 @@ This may occur if a hero runs out of health.
 **Response**:
 ```json
 {
-    "success": "boolean"
+    "success": "boolean",
+    "message": "str"
 }
-```
-### 5.5 Die - `/hero/die/{hero_id}/` (POST)
-
-**Response**:
-```json
-{
-    "success": "boolean"
-}
-```
 
 ## 6. Monsters
 API calls are made in this sequence when it comes to monsters attacking heroes.
 
 1. `Find Heroes`
 2. `Attack Hero`
-
-This can occur if a monster is killed by a hero.
-
-3. `Die`
 
 ### 6.1 Find Heroes - `/monster/find_heroes/{dungeon_id}/` (GET)
 
@@ -408,17 +405,8 @@ This can occur if a monster is killed by a hero.
 
 ```json
 {
-    "success": "boolean"
-}
-```
-
-### 6.3 Die - `/monster/die/{monster_id}` (POST)
-
-**Response**:
-
-```json
-{
-    "success": "boolean"
+    "success": "boolean",
+    "message": "str"
 }
 ```
 

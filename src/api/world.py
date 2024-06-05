@@ -129,7 +129,7 @@ def create_hero(world_id: int, hero: Hero):
         if result.rowcount > 0:
             return {"success": True}
         else:
-            return {"success": False, "message": "Error with server request, try again"}
+            return {"success": False, "message": "That hero name is already taken, try something else"}
 
 
 # Age Hero - /world/age_hero/{hero_id} (POST)

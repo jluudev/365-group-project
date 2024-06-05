@@ -328,45 +328,11 @@ Response body:
 }
 ```
 
-5. `POST /monster/die/{monster_id}`
-
-```
-curl -X 'POST' \
-  'https://arthurslastcrusade.onrender.com/monster/die/1' \
-  -H 'accept: application/json' \
-  -H 'access_token: 4888d45f8ecd9127e7b5aef96fb5f934'
-```
-
-Response body:
-```json
-{
-  "success": true
-}
-```
-
 6. `POST /hero/run_away/{hero_id}/`
 
 ```
 curl -X 'POST' \
   'https://arthurslastcrusade.onrender.com/hero/run_away/28' \
-  -H 'accept: application/json' \
-  -H 'access_token: 4888d45f8ecd9127e7b5aef96fb5f934' \
-  -d ''
-```
-
-Response body:
-```json
-{
-  "success": true
-}
-```
-
-7. `POST /hero/die/{hero_id}/`
-- Note, we manually modified a hero's health to 0, but you can repeatedly call attack_hero to make the  health 0 too.
-
-```
-curl -X 'POST' \
-  'https://arthurslastcrusade.onrender.com/hero/die/27' \
   -H 'accept: application/json' \
   -H 'access_token: 4888d45f8ecd9127e7b5aef96fb5f934' \
   -d ''
