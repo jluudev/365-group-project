@@ -97,7 +97,7 @@ def create_hero(world_id: int, hero: Hero):
     '''
 
     sql_to_execute = """
-    INSERT INTO hero (name, class, level, age, power, health, xp, world_id)
+    INSERT INTO hero (name, role, level, age, power, health, xp, world_id)
     VALUES (:name, :class, :level, :age, :power, :health, :xp, :world_id)
     """
     if hero.level < 0:
