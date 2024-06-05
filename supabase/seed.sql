@@ -62,47 +62,34 @@ INSERT INTO guild (name, player_capacity, gold, world_id) VALUES
 ;
 
 -- Insert data into the hero table
-INSERT INTO hero (name, power, health, age, guild_id, world_id, level, xp) VALUES
-    ('Wizard101', 10, 50, 68, 1, 1, 1, 0),
-    ('Sorceress123', 10, 50, 100, 1, 1, 5, 0),
-    ('OPbishop', 12, 25, 30, 2, 2, 3, 0),
-    ('Bob', 5, 20, 5, NULL, 4, 2, 0),
-    ('Joe', 10, 50, 34, NULL, 5, 9, 0),
-    ('Bill', 10, 50, 20, NULL, 6, 7, 0),
-    ('Dylan', 10, 50, 13, NULL, 1, 6, 0),
-    ('Sara', 10, 50, 15, NULL, 2, 8, 0),
-    ('Megan', 10, 50, 19, NULL, 3, 4, 0),
-    ('Katie', 10, 50, 45, NULL, 4, 3, 0),
-    ('Lily', 10, 50, 31, NULL, 5, 2, 0),
-    ('Sophia', 10, 50, 96, NULL, 6, 1, 0),
-    ('Olivia', 10, 50, 40, NULL, 1, 1, 0),
-    ('Emily', 10, 50, 21, NULL, 2, 1, 0),
-    ('Ava', 10, 50, 41, NULL, 3, 1, 0),
-    ('Isabella', 10, 50, 52, NULL, 4, 1, 0),
-    ('Mia', 10, 50, 34, NULL, 5, 1, 0),
-    ('Abigail', 10, 50, 18, NULL, 6, 1, 0),
-    ('Madison', 10, 50, 46, NULL, 1, 1, 0),
-    ('Charlotte', 10, 50, 45, 1, 1, 10, 0)
-;
-
--- Insert dead heroes for testing
-INSERT INTO hero (name, power, health, age, guild_id, dungeon_id, world_id, level, xp) VALUES
-    ('Dead1', 10, 0, 100, 1, 1, 1, 1, 0),
-    ('Dead2', 10, 0, 100, 1, 1, 1, 1, 0),
-    ('Dead3', 10, 0, 100, 1, 1, 1, 1, 0)
+INSERT INTO hero (name, power, health, guild_id, world_id, level, xp) VALUES
+    ('Wizard101', 10, 50, 1, 1, 1, 0),
+    ('Sorceress123', 10, 50, 1, 1, 5, 0),
+    ('OPbishop', 12, 25, 2, 2, 3, 0),
+    ('Bob', 5, 20, NULL, 4, 2, 0),
+    ('Joe', 10, 50, NULL, 5, 9, 0),
+    ('Bill', 10, 50, NULL, 6, 7, 0),
+    ('Dylan', 10, 50, NULL, 1, 6, 0),
+    ('Sara', 10, 50, NULL, 2, 8, 0),
+    ('Megan', 10, 50, NULL, 3, 4, 0),
+    ('Katie', 10, 50, NULL, 4, 3, 0),
+    ('Lily', 10, 50, NULL, 5, 2, 0),
+    ('Sophia', 10, 50, NULL, 6, 1, 0),
+    ('Olivia', 10, 50, NULL, 1, 1, 0),
+    ('Emily', 10, 50, NULL, 2, 1, 0),
+    ('Ava', 10, 50, NULL, 3, 1, 0),
+    ('Isabella', 10, 50, NULL, 4, 1, 0),
+    ('Mia', 10, 50, NULL, 5, 1, 0),
+    ('Abigail', 10, 50, NULL, 6, 1, 0),
+    ('Madison', 10, 50, NULL, 1, 1, 0),
+    ('Charlotte', 10, 50, 1, 1, 10, 0)
 ;
 
 -- Insert hero party to a dungeon
-INSERT INTO hero (name, power, health, age, guild_id, dungeon_id, world_id, level, xp) VALUES
-    ('Harper', 10, 50, 43, 1, 1, 1, 10, 0),
-    ('Scarlett', 10, 50, 64, 1, 1, 1, 10, 0),
-    ('Aurora', 10, 50, 60, 1, 1, 1, 10, 0),
-    ('Aria', 10, 50, 17, 1, 1, 1, 10, 0),
-    ('Amelia', 10, 50, 55, 1, 1, 1, 10, 100)
-;
-
--- Insert test data into targeting table
-INSERT INTO targeting (hero_id, monster_id) VALUES
-    (28, 1),
-    (27, 2)
+INSERT INTO hero (name, power, health, guild_id, dungeon_id, world_id, level, xp) VALUES
+    ('Harper', 10, 50, 1, 1, 1, 10, 0),
+    ('Scarlett', 10, 50, 1, 1, 1, 10, 0),
+    ('Aurora', 10, 50, 1, 1, 1, 10, 0),
+    ('Aria', 10, 50, 1, 1, 1, 10, 0),
+    ('Amelia', 10, 50, 1, 1, 1, 10, 100)
 ;
