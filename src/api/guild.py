@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from src.api import auth
 import sqlalchemy
 from src import database as db
+from sqlalchemy.exc import IntegrityError
 
 router = APIRouter(
     prefix="/guild",
@@ -56,28 +57,49 @@ def create_guild(world_id: int, guild: Guild):
         SuccessResponse: Indicates whether the guild was successfully created.
     """
 
+    # Check for invalid inputs
     if world_id < 0:
-        raise HTTPException(status_code = 400, detail = "Invalid World Id")
+        raise HTTPException(status_code=400, detail="Invalid World Id")
     if guild.max_capacity < 0:
-        raise HTTPException(status_code = 400, detail = "Invalid Guild Capacity")
+        raise HTTPException(status_code=400, detail="Invalid Guild Capacity")
     if guild.gold < 0:
-        raise HTTPException(status_code = 400, detail = "Invalid Gold")
+        raise HTTPException(status_code=400, detail="Invalid Gold")
 
-    sql_to_execute = sqlalchemy.text("""
+    # Query to check guild capacity and insert guild
+    sql_to_execute = """
+    WITH guild_count AS (
+        SELECT COUNT(*) AS current_guild_count
+        FROM guild
+        WHERE world_id = :world_id
+    ),
+    capacity_check AS (
+        SELECT guild_capacity
+        FROM world
+        WHERE id = :world_id
+    )
     INSERT INTO guild (name, player_capacity, gold, world_id)
-    VALUES (:name, :max_capacity, :gold, :world_id);
-    """)
+    SELECT :name, :max_capacity, :gold, :world_id
+    FROM guild_count, capacity_check
+    WHERE guild_count.current_guild_count < capacity_check.guild_capacity
+    RETURNING id;
+    """
+
     with db.engine.begin() as connection:
-        result = connection.execute(sql_to_execute, {
-            "name": guild.guild_name,
-            "max_capacity": guild.max_capacity,
-            "gold": guild.gold,
-            "world_id": world_id
-        })
-        if result.rowcount > 0:
-            return {"success": True}
-        else:
-            return {"success": False, "message": "Failed to create guild"}
+        try:
+            result = connection.execute(sqlalchemy.text(sql_to_execute), {
+                "name": guild.guild_name,
+                "max_capacity": guild.max_capacity,
+                "gold": guild.gold,
+                "world_id": world_id
+            })
+
+            # Check if guild creation was successful
+            if result.rowcount > 0:
+                return SuccessResponse(success=True, message=f"guild id {result.fetchone().id} created")
+            else:
+                return SuccessResponse(success=False, message="Failed to create guild")
+        except IntegrityError:
+            return HTTPException(status_code=400, detail="Guild name must be unique within specified world")
 
 @router.post("/recruit_hero/{guild_id}", response_model=SuccessResponse)
 def recruit_hero(guild_id: int, hero: Hero):
@@ -130,8 +152,8 @@ def available_heroes(guild_id: int):
         ]
     return heroes
 
-@router.post("/remove_heroes/{guild_id}", response_model=SuccessResponse)
-def remove_heroes(guild_id: int, heroes: list[Hero]):
+@router.post("/remove_dead_heroes/{guild_id}", response_model=SuccessResponse)
+def remove_dead_heroes(guild_id: int, heroes: list[Hero]):
     """
     Remove dead heroes from a guild.
 

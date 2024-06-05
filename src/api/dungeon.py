@@ -66,23 +66,40 @@ def create_dungeon(world_id: int, dungeon: Dungeon):
     if world_id < 0:
         raise HTTPException(status_code = 400, detail = "Invalid World Id")
         
-    sql_to_execute = sqlalchemy.text("""
+    sql_to_execute = """
+    WITH dungeon_count AS (
+        SELECT COUNT(*) AS current_dungeon_count
+        FROM dungeon
+        WHERE world_id = :world_id
+    ),
+    capacity_check AS (
+        SELECT dungeon_capacity
+        FROM world
+        WHERE id = :world_id
+    )
     INSERT INTO dungeon (name, level, party_capacity, monster_capacity, gold_reward, world_id)
-    VALUES (:name, :level, :player_capacity, :monster_capacity, :reward, :world_id);
-    """)
+    SELECT :name, :level, :player_capacity, :monster_capacity, :reward, :world_id
+    FROM dungeon_count, capacity_check
+    WHERE dungeon_count.current_dungeon_count < capacity_check.dungeon_capacity
+    RETURNING id
+    """
+
     with db.engine.begin() as connection:
-        result = connection.execute(sql_to_execute, {
-            "name": dungeon.dungeon_name,
-            "level": dungeon.dungeon_level,
-            "player_capacity": dungeon.player_capacity,
-            "monster_capacity": dungeon.monster_capacity,
-            "reward": dungeon.reward,
-            "world_id": world_id
-        })
-        if result.rowcount > 0:
-            return SuccessResponse(success=True, message="Dungeon created successfully")
-        else:
-            raise HTTPException(status_code = 400, detail = "Failed to create dungeon")
+        try:
+            result = connection.execute(sqlalchemy.text(sql_to_execute), {
+                "name": dungeon.dungeon_name,
+                "level": dungeon.dungeon_level,
+                "player_capacity": dungeon.player_capacity,
+                "monster_capacity": dungeon.monster_capacity,
+                "reward": dungeon.reward,
+                "world_id": world_id
+            })
+            if result.rowcount > 0:
+                return SuccessResponse(success=True, message=f"Dungeon id {result.fetchone().id} created successfully")
+            else:
+                raise HTTPException(status_code = 400, detail = "Failed to create dungeon due to maximum capacity reached in the world")
+        except sqlalchemy.exc.IntegrityError:
+            raise HTTPException(status_code = 400, detail = "Dungeon name must be unique within specified world")
 
 @router.post("/create_monster/{dungeon_id}", response_model=SuccessResponse)
 def create_monster(dungeon_id: int, monsters: List[Monster]):

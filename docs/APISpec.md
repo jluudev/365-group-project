@@ -195,7 +195,7 @@ Gets a list of heroes that died in action from the raid
 ]
 ```
 
-### 3.6 Remove Dead Heroes - `/guild/remove_heroes/{guild_id}` (POST)
+### 3.6 Remove Dead Heroes - `/guild/remove_dead_heroes/{guild_id}` (POST)
 Removes dead heroes from the guild
 
 **Request**:
@@ -358,24 +358,12 @@ Heroes may periodically check their health and choose to run away
     "success": "boolean"
 }
 ```
-### 5.5 Die - `/hero/die/{hero_id}/` (POST)
-
-**Response**:
-```json
-{
-    "success": "boolean"
-}
-```
 
 ## 6. Monsters
 API calls are made in this sequence when it comes to monsters attacking heroes.
 
 1. `Find Heroes`
 2. `Attack Hero`
-
-This can occur if a monster is killed by a hero.
-
-3. `Die`
 
 ### 6.1 Find Heroes - `/monster/find_heroes/{dungeon_id}/` (GET)
 
@@ -408,15 +396,6 @@ This can occur if a monster is killed by a hero.
 }
 ```
 
-### 6.3 Die - `/monster/die/{monster_id}` (POST)
-
-**Response**:
-
-```json
-{
-    "success": "boolean"
-}
-```
 
 ## 7. Complex Endpoints
 Complex meaning it does significantly more than just a straightforward create/update/delete/read from the database.
