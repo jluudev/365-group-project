@@ -25,6 +25,16 @@ class SuccessResponse(BaseModel):
 
 @router.get("/find_heroes/{dungeon_id}", response_model=list[HeroDetails])
 def find_heroes(dungeon_id: int):
+    """
+    Find heroes in a specific dungeon.
+
+    Args:
+        dungeon_id (int): The ID of the dungeon.
+
+    Returns:
+        List[HeroDetails]: List of heroes found in the specified dungeon.
+    """
+
     with db.engine.begin() as connection:
         result = connection.execute(
             sqlalchemy.text("""
@@ -43,6 +53,17 @@ def find_heroes(dungeon_id: int):
 
 @router.post("/attack_hero/{monster_id}", response_model=SuccessResponse)
 def attack_hero(hero_id: int, monster_id: int):
+    """
+    Attack a hero with a monster.
+
+    Args:
+        hero_id (int): The ID of the hero to be attacked.
+        monster_id (int): The ID of the monster attacking the hero.
+
+    Returns:
+        SuccessResponse: Indicates whether the attack was successful.
+    """
+    
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text("""
             UPDATE hero

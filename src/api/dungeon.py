@@ -43,6 +43,17 @@ class GoldResponse(BaseModel):
 
 @router.post("/create_dungeon/{world_id}", response_model=SuccessResponse)
 def create_dungeon(world_id: int, dungeon: Dungeon):
+    """
+    Create a new dungeon in a specific world.
+
+    Args:
+        world_id (int): The ID of the world where the dungeon will be created.
+        dungeon (Dungeon): The details of the dungeon to be created.
+
+    Returns:
+        SuccessResponse: Indicates whether the dungeon creation was successful.
+    """
+
     sql_to_execute = sqlalchemy.text("""
     INSERT INTO dungeon (name, level, party_capacity, monster_capacity, gold_reward, world_id)
     VALUES (:name, :level, :player_capacity, :monster_capacity, :reward, :world_id);
@@ -63,6 +74,17 @@ def create_dungeon(world_id: int, dungeon: Dungeon):
 
 @router.post("/create_monster/{dungeon_id}", response_model=SuccessResponse)
 def create_monster(dungeon_id: int, monster: Monster):
+    """
+    Create a new monster in a specific dungeon.
+
+    Args:
+        dungeon_id (int): The ID of the dungeon where the monster will be created.
+        monster (Monster): The details of the monster to be created.
+
+    Returns:
+        SuccessResponse: Indicates whether the monster creation was successful.
+    """
+
     sql_to_execute = sqlalchemy.text("""
     INSERT INTO monster (type, health, dungeon_id, power, level)
     VALUES (:type, :health, :dungeon_id, :power, :level);
@@ -98,11 +120,10 @@ def collect_bounty(guild_id: int, dungeon_id: int):
         SELECT COUNT(*) AS count
         FROM monster
         WHERE dungeon_id = :dungeon_id AND health > 0
-        FOR UPDATE
     ),
     guild_update AS (
         UPDATE guild
-        SET gold = gold + (SELECT gold_reward FROM dungeon WHERE id = :dungeon_id FOR UPDATE)
+        SET gold = gold + (SELECT gold_reward FROM dungeon WHERE id = :dungeon_id)
         WHERE id = :guild_id
         AND (SELECT count FROM monster_count) = 0
         RETURNING gold
