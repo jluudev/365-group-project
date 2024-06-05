@@ -237,7 +237,7 @@ If the heroes are not yet in a guild, they will call the below as well.
 [
     {
         "name" : "string",
-        "class": "string",
+        "role": "string",
         "level": "number",
         "age": "number",
     }

@@ -18,6 +18,8 @@ class Hero(BaseModel):
     Attributes -
         hero_name: str
             name of the hero
+        role: str
+            class of hero
         level: int
         age: int
             how old the hero is
@@ -27,6 +29,7 @@ class Hero(BaseModel):
         xp: int
     '''
     hero_name: str
+    role: str
     level: int
     age: int
     power: int
@@ -47,7 +50,7 @@ def view_heroes(world_id: int):
     heroes = []
     with db.engine.begin() as connection:
         sql_to_execute ="""
-            SELECT name, level, power, age, health
+            SELECT name, role, level, power, age, health
             FROM hero
             WHERE guild_id IS NULL AND world_id = :world_id;
         """
@@ -57,6 +60,7 @@ def view_heroes(world_id: int):
         for row in result:
             heroes.append({
                 "name": row.name,
+                "role": row.role,
                 "level": row.level,
                 "power": row.power,
                 "age": row.age,
@@ -80,7 +84,7 @@ def get_quests(world_id : int):
             sqlalchemy.text("""SELECT name, level FROM dungeon WHERE world_id = :world_id AND status = 'open'"""),
             {"world_id": world_id}
         )
-        dungeons = [{"dungeon_name": row[0], "level": row[1]} for row in result.fetchall()]
+        dungeons = [{"dungeon_name": row.name, "level": row.level} for row in result.fetchall()]
     return dungeons
 
 # Create Hero - /world/create_hero/{world_id} (POST)
@@ -93,8 +97,8 @@ def create_hero(world_id: int, hero: Hero):
     '''
 
     sql_to_execute = """
-    INSERT INTO hero (name, level, age, power, health, xp, world_id)
-    VALUES (:name, :level, :age, :power, :health, :xp, :world_id)
+    INSERT INTO hero (name, role, level, age, power, health, xp, world_id)
+    VALUES (:name, :role, :level, :age, :power, :health, :xp, :world_id)
     """
     if hero.level < 0:
         raise HTTPException(status_code = 404, detail = "Invalid Hero Level")
@@ -112,6 +116,7 @@ def create_hero(world_id: int, hero: Hero):
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text(sql_to_execute), {
             "name": hero.hero_name,
+            "role": hero.role,
             "level": hero.level,
             "age": hero.age,
             "power": hero.power,

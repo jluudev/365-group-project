@@ -26,13 +26,13 @@ class Guild(BaseModel):
     Attributes -
         guild_name: str
             the name of the guild
-        max_capacity: int
+        player_capacity: int
             how many heroes max that can be recruited by the guild
         gold: int
             how much gold the guild has
     '''
     guild_name: str
-    max_capacity: int
+    player_capacity: int
     gold: int
 
 # Endpoint
@@ -42,25 +42,25 @@ class Guild(BaseModel):
 def create_guild(world_id: int, guild: Guild):
     '''
     Creates a guild at specified world_id\n
-    Takes: world_id (int), Guild (guild_name, max_capacity, gold)\n
+    Takes: world_id (int), Guild (guild_name, player_capacity, gold)\n
     Returns: boolean on success or failure of guild creation
     '''
 
     sql_to_execute = """
-    INSERT INTO guild (name, max_capacity, gold, world_id)
-    VALUES (:name, :max_capacity, :gold, :world_id);
+    INSERT INTO guild (name, player_capacity, gold, world_id)
+    VALUES (:name, :player_capacity, :gold, :world_id);
     """
     if world_id < 0:
         raise HTTPException(status_code = 400, detail = "Invalid World Id")
-    if guild.max_capacity < 0:
+    if guild.player_capacity < 0:
         raise HTTPException(status_code = 400, detail = "Invalid Guild Capacity")
     if guild.gold < 0:
         raise HTTPException(status_code = 400, detail = "Invalid Gold")
 
     with db.engine.begin() as connection:
-        connection.execute(sql_to_execute, {
+        connection.execute(sqlalchemy.text(sql_to_execute), {
             "name": guild.guild_name,
-            "max_capacity": guild.max_capacity,
+            "player_capacity": guild.player_capacity,
             "gold": guild.gold,
             "world_id": world_id
         })
