@@ -313,10 +313,6 @@ Heroes may periodically check their health and choose to run away
 3. `Check Health`
 4. `Run Away`
 
-This may occur if a hero runs out of health.
-
-5. `Die`
-
 ### 5.1 Find Monsters - `/hero/find_monsters/{dungeon_id}/` (GET)
 
 **Response**:
