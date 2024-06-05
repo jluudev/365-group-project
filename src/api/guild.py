@@ -123,7 +123,7 @@ def recruit_hero(guild_id: int, hero: Hero):
     with db.engine.begin() as connection:
         result = connection.execute(sql_to_execute, {'hero_name': hero.hero_name, 'guild_id': guild_id})
         if result.rowcount > 0:
-            return SuccessResponse(success=True, message=f"{hero.hero_name} recruited successfully")
+            return SuccessResponse(success=True, message=f"Invitation sent to {hero.hero_name} successfully")
         else:
             raise HTTPException(status_code = 404, detail = "Hero not found or already in guild")
 
