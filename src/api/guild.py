@@ -192,9 +192,15 @@ def send_party(guild_id: int, party: list[Hero], dungeon_name: str):
         # Update hero dungeon_id
         hero_names = [hero.hero_name for hero in party]
         update_hero = sqlalchemy.text("""
+        WITH updated_heroes AS (
         UPDATE hero
         SET dungeon_id = (SELECT id FROM dungeon WHERE name = :dungeon_name AND status = 'open')
         WHERE name IN :hero_names AND guild_id = :guild_id
+        RETURNING dungeon_id
+        )
+        SELECT updated_heroes.dungeon_id, status
+        FROM updated_heroes
+        JOIN dungeon ON dungeon.id = updated_heroes.dungeon_id
         """)
         result = connection.execute(update_hero, {"hero_names": tuple(hero_names), "guild_id": guild_id, "dungeon_name": dungeon_name})
             
