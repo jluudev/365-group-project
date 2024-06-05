@@ -123,7 +123,7 @@ def recruit_hero(guild_id: int, hero: Hero):
     with db.engine.begin() as connection:
         result = connection.execute(sql_to_execute, {'hero_name': hero.hero_name, 'guild_id': guild_id})
         if result.rowcount > 0:
-            return {"success": True}
+            return SuccessResponse(success=True, message=f"{hero.hero_name} recruited successfully")
         else:
             raise HTTPException(status_code = 404, detail = "Hero not found or already in guild")
 
@@ -214,7 +214,7 @@ def send_party(guild_id: int, party: list[Hero], dungeon_name: str):
                                             SET status = 'closed'
                                             WHERE name = :dungeon_name"""),
                                             {"dungeon_name": dungeon_name})
-            return {"success": True}
+            return SuccessResponse(success=True, message="Party sent to dungeon")
         else:
             raise HTTPException(status_code = 404, detail = "Hero not found or already in a dungeon")
 
