@@ -8,17 +8,18 @@ The API calls are made in this sequence when creating a guild and recruiting som
 3. `Recruit Hero`
 
 ### 1.1 Create Guild - `/guild/create_guild/{world_id}` (POST)
-Creates a guild in the world. The guild may be denied from being created if there is some details match another existing guild.
+Creates a guild in the world. The guild may be denied from being created if some details match another existing guild.
 
-**Request**:
+***Request***:
 ```json
-[
+{
+    "world_id": "int",
     {
         "guild_name": "string",
         "max_capacity": "int",
-        "gold": "int",
+        "gold": "int"
     }
-]
+}
 ```
 ***Response***:
 
@@ -32,7 +33,14 @@ Creates a guild in the world. The guild may be denied from being created if ther
 ### 1.2 View Heroes - `/world/view_heroes/{world_id}` (GET)
 Shares all the available heroes in the world.
 
-**Response**:
+***Request***:
+```json
+{
+    "world_id": "int"
+}
+```
+
+***Response***:
 ```json
 [
     {
@@ -53,7 +61,9 @@ Recruits a hero.
 {
     "guild_id" : "int",
     "message" : "string",
-    "hero_name" : "string"
+    {
+        "hero_name" : "string"
+    }
 }
 ```
 
@@ -73,9 +83,10 @@ API calls are made in this sequence when creating a dungeon.
 ### 2.1 Create Dungeon - `/dungeon/create_dungeon/{world_id}` (POST)
 Creates a dungeon in the world. Errors if there is a dungeon with the same name.
 
-**Request**:
+***Request***:
 ```json
-[
+{
+    "world_id": "int",
     {
         "dungeon_name": "string",
         "player_capacity": "int",
@@ -83,7 +94,7 @@ Creates a dungeon in the world. Errors if there is a dungeon with the same name.
         "dungeon_level": "int",
         "reward": "int",
     }
-]
+}
 ```
 
 ***Response***:
@@ -97,13 +108,17 @@ Creates a dungeon in the world. Errors if there is a dungeon with the same name.
 ### 2.2 Create Monster - `/dungeon/create_monster/{dungeon_id}` (POST)
 Creates a monster within a dungeon.
 
-**Request**:
+***Request***:
 ```json
-[
+{
+    "dungeon_id": "int",
     {
         "type" : "string",
+        "health" : "int",
+        "power" : "int",
+        "level" : "int"
     }
-]
+}
 ```
 
 ***Response***:
@@ -127,7 +142,14 @@ API calls are made in this sequence when it comes to sending heroes out into dun
 ### 3.1 Get Quests - `/world/get_quests/{world_id}` (GET)
 Shares all the available dungeons to be raided in the world
 
-**Response**:
+***Request***:
+```json
+{
+    "world_id": "int"
+}
+```
+
+***Response***:
 
 ```json
 [
@@ -141,6 +163,13 @@ Shares all the available dungeons to be raided in the world
 ### 3.2 Check Available Heroes - `/guild/available_heroes/{guild_id}` (GET)
 Shares all available heroes in the guild
 
+***Request***:
+```json
+{
+    "guild_id": "int"
+}
+```
+
 ***Response***:
 ```json
 [
@@ -148,6 +177,7 @@ Shares all available heroes in the guild
         "hero_name": "string",
         "level": "int",
         "power": "int",
+        "health": "int",
         "age": "int",
     }
 ]
@@ -156,16 +186,19 @@ Shares all available heroes in the guild
 ### 3.3 Send Party - `/guild/send_party/{guild_id}` (POST)
 Sends the party (list of heroes) to be sent to the dungeon. The party may be sent back if they do not meet the level requirements or their party size does not meet the dungeon size.
 
-**Request**:
+***Request***:
 ```json
-[
-    {
-        "hero_name": "string"
-    }
-]
-
-"dungeon_name": "string"
+{
+    "guild_id" : "int",
+    "party" : [
+        {
+            "hero_name": "string"
+        }
+    ],
+    "dungeon_name" : "string"
+}
 ```
+
 ***Response***:
 
 ```json
@@ -178,19 +211,35 @@ Sends the party (list of heroes) to be sent to the dungeon. The party may be sen
 ### 3.4 Collect Bounty - `/dungeon/collect_bounty/{guild_id}` (POST)
 Collects the gold alloted for the guild from the dungeon raid
 
-***Response***:
-
+***Request***:
 ```json
 {
-    "gold": "int"
+    "guild_id" : "int",
+    "dungeon_id" : "int"
+}
+```
+
+***Response***:
+```json
+{
+    "gold": "int",
+    "success": "bool",
+    "message": "string"
 }
 ```
 
 ### 3.5 Assess Damage - `/dungeon/assess_damage/{dungeon_id}` (GET)
 Gets a list of heroes that died in action from the raid
 
-***Response***:
+***Request***:
+```json
+{
+    "guild_id" : "int",
+    "dungeon_id" : "int"
+}
+```
 
+***Response***:
 ```json
 [
     {
@@ -205,18 +254,19 @@ Gets a list of heroes that died in action from the raid
 ### 3.6 Remove Dead Heroes - `/guild/remove_dead_heroes/{guild_id}` (POST)
 Removes dead heroes from the guild
 
-**Request**:
-
+***Request***:
 ```json
-[
-    {
-        "hero_name":"string"
-    }
-]
+{
+    "guild_id": "int",
+    "heroes": [
+        {
+            "hero_name":"string"
+        }
+    ]
+}
 ```
 
 ***Response***:
-
 ```json
 {
     "success": "boolean",
@@ -238,29 +288,41 @@ If the heroes are not yet in a guild, they will call the below as well.
 6. `Accept Request`
 
 ### 4.1 Create Hero - `/world/create_hero/{world_id}` (POST)
+creates a hero with given name, role, level, age.
 
-**Request**:
-
+***Request***:
 ```json
-[
+{
+    "world_id": "int",
     {
         "name" : "string",
         "role": "string",
         "level": "int",
         "age": "int",
+        "power": "int",
+        "health": "int",
+        "xp": "int"
     }
-]
+}
 ```
 
 ***Response***:
-
 ```json
 {
     "success": "boolean",
     "message": "str"
 }
 ```
+
 ### 4.2 Age Hero - `/world/age_hero/{hero_id}` (POST)
+increases the age of the hero by 1.
+
+***Request***:
+```json
+{
+    "hero_id": "int"
+}
+```
 
 ***Response***:
 ```json
@@ -269,7 +331,16 @@ If the heroes are not yet in a guild, they will call the below as well.
     "message": "str"
 }
 ```
+
 ### 4.3 Check XP - `/hero/check_xp/{hero_id}` (GET)
+returns the xp of the hero.
+
+***Request***:
+```json
+{
+    "hero_id": "int"
+}
+```
 
 ***Response***:
 ```json
@@ -277,7 +348,16 @@ If the heroes are not yet in a guild, they will call the below as well.
     "xp": "int"
 }
 ```
+
 ### 4.4 Raise Level - `/hero/raise_level/{hero_id}` (POST)
+Increases the level of the hero by one and decrements xp by 100 if hero has more than 100 xp.
+
+***Request***:
+```json
+{
+    "hero_id": "int"
+}
+```
 
 ***Response***:
 ```json
@@ -287,6 +367,14 @@ If the heroes are not yet in a guild, they will call the below as well.
 }
 ```
 ### 4.5 View Pending Requests - `/hero/view_pending_requests/{hero_id}` (GET)
+Looks at all recruitment requests sent to hero.
+
+***Request***:
+```json
+{
+    "hero_id": "int"
+}
+```
 
 ***Response***:
 ```json
@@ -298,11 +386,14 @@ If the heroes are not yet in a guild, they will call the below as well.
     }
 ]
 ```
+
 ### 4.6 Accept Request - /hero/accept_request/{hero_id}/ (POST)
+Hero joins guild and sets pending request to 'accept'.
 
 ***Request***:
 ```json
 {
+    "hero_id" : "int",
     "guild_name": "string"
 }
 ```
@@ -326,8 +417,16 @@ Heroes may periodically check their health and choose to run away
 4. `Run Away`
 
 ### 5.1 Find Monsters - `/hero/find_monsters/{dungeon_id}/` (GET)
+Lists all monsters within the dungeon.
 
-**Response**:
+***Request***:
+```json
+{
+    "dungeon_id" : "int"
+}
+```
+
+***Response***:
 ```json
 [
     {
@@ -338,16 +437,19 @@ Heroes may periodically check their health and choose to run away
     }
 ]
 ```
-### 5.2 Attack Monster - `/hero/attack_monster/{hero_id}/` (POST)
 
-**Request**:
+### 5.2 Attack Monster - `/hero/attack_monster/{hero_id}/` (POST)
+Deals damage of hero against monster.
+
+***Request***:
 ```json
 {
     "monster_id":"int",
+    "hero_id": "int"
 }
 ```
 
-**Response**:
+***Response***:
 ```json
 {
     "success": "boolean",
@@ -356,21 +458,38 @@ Heroes may periodically check their health and choose to run away
 ```
 
 ### 5.3 Check Health - `/hero/check_health/{hero_id}/` (GET)
+Returns health of hero.
 
-**Response**:
+***Request***:
+```json
+{
+    "hero_id" : "int"
+}
+```
+
+***Response***:
 ```json
 {
     "health": "int"
 }
 ```
 ### 5.4 Run Away - `/hero/run_away/{hero_id}/` (POST)
+Removes hero from dungeon if they are not currently in combat.
 
-**Response**:
+***Request***:
+```json
+{
+    "hero_id" : "int"
+}
+```
+
+***Response***:
 ```json
 {
     "success": "boolean",
     "message": "str"
 }
+```
 
 ## 6. Monsters
 API calls are made in this sequence when it comes to monsters attacking heroes.
@@ -379,8 +498,16 @@ API calls are made in this sequence when it comes to monsters attacking heroes.
 2. `Attack Hero`
 
 ### 6.1 Find Heroes - `/monster/find_heroes/{dungeon_id}/` (GET)
+Returns all heroes within a dungeon.
 
-**Response**:
+***Request***:
+```json
+{
+    "dungeon_id" : "int"
+}
+```
+
+***Response***:
 ```json
 [
     {
@@ -393,16 +520,16 @@ API calls are made in this sequence when it comes to monsters attacking heroes.
 ```
 
 ### 6.2 Attack Hero - `/monster/attack_hero/{monster_id}/` (POST)
+Deals damage of monster against hero.
 
-**Request**:
+***Request***:
 ```json
 {
     "hero_id":"int",
+    "monster_id" : "int"
 }
 ```
-
-**Response**:
-
+***Response***:
 ```json
 {
     "success": "boolean",
@@ -416,7 +543,13 @@ Complex meaning it does significantly more than just a straightforward create/up
 ### 7.1 Hero-Monster Interaction Report - `/hero/{hero_id}/monster_interactions` (GET)
 Provides detailed insights into a hero's interactions with monsters, including metrics such as the number of monsters defeated, total damage dealt, and detailed statistics for each battle.
 
-**Response**:
+***Request***:
+```json
+{
+    "hero_id" : "int"
+}
+```
+***Response***:
 ```json
 {
     "status": "boolean",
@@ -438,12 +571,13 @@ Provides detailed insights into a hero's interactions with monsters, including m
         }
     ]
 }
+```
 
 
 ### 7.2 Leaderboard - `/leaderboard` (GET)
 Provides a leaderboard ranking guilds based on their total gold, the number of heroes, and the average power of their heroes.
 
-**Response**:
+***Response***:
 ```json
 {
     "status": "boolean",
@@ -458,3 +592,4 @@ Provides a leaderboard ranking guilds based on their total gold, the number of h
         }
     ]
 }
+```
