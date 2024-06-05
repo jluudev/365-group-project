@@ -52,6 +52,16 @@ class HeroMonsterInteractionsResponse(BaseModel):
     total_damage_dealt: int
     battle_details: list[HeroMonsterInteraction]
 
+class Hero(BaseModel):
+    id: int
+    level: int
+    xp: int
+
+class UpdatedHero(BaseModel):
+    xp: int
+    updated_xp: int
+    updated_level: int
+
 # Endpoints
 
 @router.get("/check_xp/{hero_id}", response_model=HeroXP)
@@ -86,16 +96,47 @@ def raise_level(hero_id: int):
         SuccessResponse: Indicates whether the level raise was successful.
     """
 
+    sql_to_execute = """
+    WITH hero AS (
+        SELECT id, level, xp
+        FROM hero
+        WHERE id = :hero_id
+    ),
+    updated_hero AS (
+        UPDATE hero
+        SET level = level + 1, xp = xp - 100
+        WHERE id = :hero_id AND xp >= 100
+        RETURNING id, level, xp
+    )
+    SELECT
+        hero.xp,
+        updated_hero.xp as updated_xp,
+        updated_hero.level as updated_level
+    FROM hero
+    LEFT JOIN updated_hero ON updated_hero.id = hero.id
+    """
+    
     with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("""
-            UPDATE hero
-            SET level = level + 1, xp = xp - 100
-            WHERE id = :hero_id AND xp >= 100
-        """), {"hero_id": hero_id})
-        if result.rowcount > 0:
-            return {"success": True}
+        result = connection.execute(sqlalchemy.text(sql_to_execute), {"hero_id": hero_id})
+
+        if result.rowcount == 0:
+            return {"success": False, "message": f"No hero matching id {hero_id}"}
+
+        row = result.fetchone()
+        if row:
+            updated_hero = UpdatedHero(
+                xp=row[0],
+                updated_xp=row[1],
+                updated_level=row[2]
+            )
+
+            if updated_hero.updated_level is not None:
+                return {"success": True, "message": f"Hero id #{hero_id}: level={updated_hero.updated_level}, xp={updated_hero.updated_xp}"}
+            else:
+                return {"success": False, "message": f"Not enough XP to raise level, current xp of hero {hero_id}: {updated_hero.xp}"}
         else:
-            return {"success": False, "message": "Not enough XP to raise level"}
+            return {"success": False, "message": f"No rows returned for hero id {hero_id}"}
+
 
 @router.get("/view_pending_requests/{hero_id}", response_model=list[PendingRequest])
 def view_pending_requests(hero_id: int):
@@ -183,7 +224,7 @@ def attack_monster(hero_id: int, monster_id: int):
             VALUES (:hero_id, :monster_id, :damage, CURRENT_TIMESTAMP)
         """), {"hero_id": hero_id, "monster_id": monster_id, "damage": damage})
 
-    return {"success": True}
+    return SuccessResponse(success=True, message="Monster attacked successfully")
 
 @router.get("/check_health/{hero_id}", response_model=HealthResponse)
 def check_health(hero_id: int):
@@ -196,14 +237,14 @@ def check_health(hero_id: int):
     Returns:
         HealthResponse: The current health of the hero.
     """
-    
+
     with db.engine.begin() as connection:
         health = connection.execute(sqlalchemy.text("""
             SELECT health
             FROM hero
             WHERE id = :hero_id
         """), {"hero_id": hero_id}).scalar_one()
-    return {"health": health}
+    return HealthResponse(health=health)
 
 @router.post("/run_away/{hero_id}", response_model=SuccessResponse)
 def run_away(hero_id: int):
@@ -225,28 +266,9 @@ def run_away(hero_id: int):
             """
             update = connection.execute(sqlalchemy.text(update_sql), {"hero_id": hero_id})
             if update.rowcount > 0:
-                return {"success": True}
+                return SuccessResponse(success=True, message="Hero successfully ran away")
             else:
-                return {"success": False, "message": "Failed to update hero's location"}
-
-@router.post("/die/{hero_id}", response_model=SuccessResponse)
-def die(hero_id: int):
-    with db.engine.begin() as connection:
-        result = connection.execute(sqlalchemy.text("""
-            UPDATE hero
-            SET status = 'dead'
-            WHERE id = :hero_id AND health <= 0
-        """), {"hero_id": hero_id})
-
-        connection.execute(sqlalchemy.text("""
-            DELETE FROM targeting
-            WHERE hero_id = :hero_id
-        """), {"hero_id": hero_id})
-
-        if result.rowcount > 0:
-            return {"success": True}
-        else:
-            return {"success": False, "message": "Hero is still alive or not found"}
+                raise HTTPException(status_code=404, detail="Hero cannot run away")
 
 @router.get("/find_monsters/{dungeon_id}", response_model=list[Monster])
 def find_monsters(dungeon_id: int):

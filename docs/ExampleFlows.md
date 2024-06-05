@@ -31,9 +31,9 @@ All the heroes choose to remain.
 - the heroes individually一after evaluating the threat一can choose to run away, by calling `POST /hero/run_away/{hero_id}/`
 - then the monsters and heroes break out into 1 on 1 battles, with monsters or heroes waiting in queue for an opening to attack. Monster at the top of the queue will call `GET /monster/find_heroes/{dungeon_id}/` to choose a hero in the queue to attack.
 - fights proceed at the same time, where hero calls on `POST /hero/attack_monster/{hero_id}/` to attack monster, and monsters call on `POST /monster/attack_hero/{monster_id}/` to attack hero.
-- let’s say Yowl the Barbarian kills the monster “Madam Tongue Eater” assigned to him, “Madam Tongue Eater” calls `GET /monster/die/{monster_id}` and the next monster from the top of the queue will be assigned to Yowl.
+- let’s say Yowl the Barbarian kills the monster “Madam Tongue Eater” assigned to him, and the next monster from the top of the queue will be assigned to Yowl.
 - Yowl decides to call `POST /hero/run_away/{hero_id}/` before a monster is assigned to him however, and successfully escapes.
-- at the same time, Sarah the Sorceress was just killed by “Small Pink Slime” and so Sarah the Sorceress issues the call `GET /hero/die/{hero_id}/` and “Small Pink Slime" goes back into the queue.
+- at the same time, Sarah the Sorceress was just killed by “Small Pink Slime” and so “Small Pink Slime" goes back into the queue.
 - after some gruesome combat, the heroes come out on top, with Bob the Mage and Sarah the Sorceress sadly passing away.
 - all remaining heroes (cowards and victors alike) check their xp level with the call `POST /hero/check_xp/{hero_id}`, and, if large enough, call `POST /hero/raise_level/{hero_id}`
 - they come back home triumphantly and crossing their fingers that the guild does not check up on them so they can keep all the gold for themselves.
