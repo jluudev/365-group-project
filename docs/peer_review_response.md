@@ -10,4 +10,5 @@
     - dungeon/create_monster
     - hero/raise_level
     - guild/recruit_hero
-
+- schema now has enums for the status field in recruitment and dungeon tables
+- moved update_hero query out of a for loop in guild/send_party
