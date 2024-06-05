@@ -98,6 +98,20 @@ def create_hero(world_id: int, hero: Hero):
     Returns:
         SuccessResponse: Indicates whether the hero creation was successful.
     """
+
+    if hero.level < 0:
+        raise HTTPException(status_code = 404, deatil = "Invalid Hero Level")
+    if hero.age < 0:
+        raise HTTPException(status_code = 404, detail = "Invalid Hero Age")
+    if hero.power < 0:
+        raise HTTPException(status_code = 404, detail = "Invalid Hero Power")
+    if hero.health < 0:
+        raise HTTPException(status_code = 404, detail = "Invalid Hero Health")
+    if hero.xp < 0:
+        raise HTTPException(status_code = 404, detail = "Invalid Hero xp")
+    if world_id < 0:
+        raise HTTPException(status_code = 404, detail = "Invalid World Id")
+
     sql_to_execute = sqlalchemy.text("""
     INSERT INTO hero (name, class, level, age, power, health, xp, world_id)
     VALUES (:name, :classType, :level, :age, :power, :health, :xp, :world_id);

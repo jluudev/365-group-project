@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from src.api import auth
 import sqlalchemy
 from src import database as db
+from typing import List
 
 router = APIRouter(
     prefix="/dungeon",
@@ -54,6 +55,17 @@ def create_dungeon(world_id: int, dungeon: Dungeon):
         SuccessResponse: Indicates whether the dungeon creation was successful.
     """
 
+    if dungeon.dungeon_level < 0:
+        raise HTTPException(status_code = 400, detail = "Invalid Dungeon Level")
+    if dungeon.player_capacity < 0:
+        raise HTTPException(status_code = 400, detail = "Invalid Player Capacity")
+    if dungeon.monster_capacity < 0:
+        raise HTTPException(status_code = 400, detail = "Invalid Monster Capacity")
+    if dungeon.reward < 0:
+        raise HTTPException(status_code = 400, detail = "Invalid Reward")
+    if world_id < 0:
+        raise HTTPException(status_code = 400, detail = "Invalid World Id")
+        
     sql_to_execute = sqlalchemy.text("""
     INSERT INTO dungeon (name, level, party_capacity, monster_capacity, gold_reward, world_id)
     VALUES (:name, :level, :player_capacity, :monster_capacity, :reward, :world_id);
@@ -68,39 +80,69 @@ def create_dungeon(world_id: int, dungeon: Dungeon):
             "world_id": world_id
         })
         if result.rowcount > 0:
-            return {"success": True}
+            return SuccessResponse(success=True, message="Dungeon created successfully")
         else:
-            return {"success": False, "message": "Failed to create dungeon"}
+            raise HTTPException(status_code = 400, detail = "Failed to create dungeon")
 
 @router.post("/create_monster/{dungeon_id}", response_model=SuccessResponse)
-def create_monster(dungeon_id: int, monster: Monster):
+def create_monster(dungeon_id: int, monsters: List[Monster]):
     """
-    Create a new monster in a specific dungeon.
+    Create new monsters in a specific dungeon.
 
     Args:
-        dungeon_id (int): The ID of the dungeon where the monster will be created.
-        monster (Monster): The details of the monster to be created.
+        dungeon_id (int): The ID of the dungeon where the monsters will be created.
+        monsters (List[Monster]): The list of monsters to be created.
 
     Returns:
-        SuccessResponse: Indicates whether the monster creation was successful.
+        SuccessResponse: Indicates whether the monsters creation was successful.
     """
 
-    sql_to_execute = sqlalchemy.text("""
+    sql_to_execute = """
+    WITH monster_count AS (
+        SELECT COUNT(*) AS current_monster_count
+        FROM monster
+        WHERE dungeon_id = :dungeon_id
+    ),
+    capacity_check AS (
+        SELECT monster_capacity
+        FROM dungeon
+        WHERE id = :dungeon_id
+    )
     INSERT INTO monster (type, health, dungeon_id, power, level)
-    VALUES (:type, :health, :dungeon_id, :power, :level);
-    """)
+    SELECT :type, :health, :dungeon_id, :power, :level
+    FROM monster_count, capacity_check
+    WHERE monster_count.current_monster_count < capacity_check.monster_capacity;
+    """
+
+    # Validate input
+    for monster in monsters:
+        if monster.health < 0:
+            raise HTTPException(status_code = 400, detail = "Invalid Monster Health")
+        if dungeon_id < 0:
+            raise HTTPException(status_code = 400, detail = "Invalid Dungeon Id")
+        if monster.power < 0:
+            raise HTTPException(status_code = 400, detail = "Invalid Monster Power")
+        if monster.level < 0:
+            raise HTTPException(status_code = 400, detail = "Invalid Monster Level")
+
+    # Execute the query once with multiple rows
     with db.engine.begin() as connection:
-        result = connection.execute(sql_to_execute, {
-            "type": monster.type,
-            "health": monster.health,
-            "dungeon_id": dungeon_id,
-            "power": monster.power,
-            "level": monster.level
-        })
+        result = connection.execute(sqlalchemy.text(sql_to_execute), [
+            {
+                "type": monster.type,
+                "health": monster.health,
+                "dungeon_id": dungeon_id,
+                "power": monster.power,
+                "level": monster.level
+            }
+            for monster in monsters
+        ])
+        
+        # Check if any rows were affected
         if result.rowcount > 0:
-            return {"success": True}
+            return SuccessResponse(success=True, message="Monsters created successfully")
         else:
-            return {"success": False, "message": "Failed to create monster"}
+            raise HTTPException(status_code = 400, detail = "Failed to create monsters")
 
 @router.post("/collect_bounty/{guild_id}", response_model=GoldResponse)
 def collect_bounty(guild_id: int, dungeon_id: int):
@@ -111,8 +153,8 @@ def collect_bounty(guild_id: int, dungeon_id: int):
             {"dungeon_id": dungeon_id}
         ).scalar()
 
-    if dungeon_status == "completed":
-        raise HTTPException(status_code=400, detail="Cannot collect bounty from a completed dungeon")
+    if dungeon_status == "completed" or dungeon_status == "open":
+        raise HTTPException(status_code=400, detail="Cannot collect bounty from a completed or open dungeon")
 
     # Proceed with the bounty collection if the dungeon status is not completed
     sql_to_execute = sqlalchemy.text("""
@@ -148,9 +190,9 @@ def collect_bounty(guild_id: int, dungeon_id: int):
         result = connection.execute(sql_to_execute, {"dungeon_id": dungeon_id, "guild_id": guild_id})
         if result.rowcount > 0:
             gold = result.fetchone()[0]
-            return {"success": True, "gold": gold}
+            return GoldResponse(success=True, gold=gold, message="Bounty collected successfully")
         else:
-            return {"success": False, "message": "Failed to collect bounty"}
+            raise HTTPException(status_code=400, detail="Cannot collect bounty")
 
 
 @router.get("/assess_damage/{dungeon_id}", response_model=list[Hero])
