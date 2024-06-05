@@ -3,6 +3,7 @@
 - made consistent error handling in guild/send_party
 - Added age to hero table
 - added docstrings to all function endpoints and class declarations
+- changed accessing of find_heroes' hero data to column selection rather than indexing
 - the following endpoints have been updated to reflect more informative success and failure messages
     - create_monster
     - raise_level

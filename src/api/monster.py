@@ -36,7 +36,7 @@ def find_heroes(dungeon_id: int):
             """
         ), {"dungeon_id": dungeon_id})
         heroes = [
-            {"id": row[0], "name": row[1], "level": row[2], "power": row[3]} 
+            {"id": row.id, "name": row.name, "level": row.level, "power": row.power} 
             for row in result.fetchall()
         ]
     return heroes
