@@ -187,7 +187,7 @@ def collect_bounty(guild_id: int, dungeon_id: int):
         result = connection.execute(sql_to_execute, {"dungeon_id": dungeon_id, "guild_id": guild_id})
         if result.rowcount > 0:
             # Return the amount of gold collected
-            return {"gold": result.fetchone()[0]}
+            return {"success": True, "message": "collected %d gold" % result.fetchone()[0]}
         else:
             return {"success": False, "message": "Failed to collect bounty"}
 

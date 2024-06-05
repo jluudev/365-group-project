@@ -222,7 +222,6 @@ Collects the gold alloted for the guild from the dungeon raid
 ***Response***:
 ```json
 {
-    "gold": "int",
     "success": "bool",
     "message": "string"
 }

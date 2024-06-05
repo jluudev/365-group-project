@@ -5,6 +5,8 @@ Code Review and Schema/API fixes
 - changed accessing of find_heroes' hero data to column selection rather than indexing
 - remove_heroes renamed to remove_dead_heroes to be more reflective of function's purpose
 - APISpec.md has been updated for current endpoints
+- removed monster/die and hero/die from endpoints, it is easier to just check if health == 0
+- standardized response of dungeon/collect_bounty endpoint
 - the following endpoints have been updated to reflect more informative success and failure messages
     - guild/create_guild
     - dungeon/create_dungeon
