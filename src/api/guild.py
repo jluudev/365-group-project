@@ -82,7 +82,7 @@ def create_guild(world_id: int, guild: Guild):
                 return {"success": True, "message": "guild %d created" % result.fetchone().id}
             else:
                 return {"success": False, "message": "World %d at max guild capacity" % world_id}
-        except sqlalchemy.exc.IntegrityError as http:
+        except sqlalchemy.exc.IntegrityError:
             return {"success": False, "message": "Guild name must be unique within specified world %d" % world_id}
 
 # Recruit Hero - /guild/recruit_hero/{guild_id} (POST)

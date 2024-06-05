@@ -111,7 +111,7 @@ def create_dungeon(world_id: int, dungeon: Dungeon):
                 return {"success": True, "message": "dungeon %d created" % result.fetchone().id}
             else:
                 return {"success": False, "message": "World %d at max dungeon capacity" % world_id}
-        except sqlalchemy.exc.IntegrityError as http:
+        except sqlalchemy.exc.IntegrityError:
             return {"success": False, "message": "Dungeon name must be unique within specified world %d" % world_id}
 
 # Create Monster - /dungeon/create_monster/{dungeon_id} (POST)
