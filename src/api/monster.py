@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from enum import Enum
 from pydantic import BaseModel
 from src.api import auth
@@ -26,19 +26,22 @@ def find_heroes(dungeon_id: int):
     '''
 
     with db.engine.begin() as connection:
-        result = connection.execute(
-            sqlalchemy.text("""
-            SELECT hero.id, hero.name, hero.level, hero.power
-            FROM hero
-            JOIN guild ON hero.guild_id = guild.id
-            JOIN dungeon ON guild.world_id = dungeon.world_id AND dungeon.id = hero.dungeon_id
-            WHERE dungeon.id = :dungeon_id and hero.health > 0
-            """
-        ), {"dungeon_id": dungeon_id})
-        heroes = [
-            {"id": row.id, "name": row.name, "level": row.level, "power": row.power} 
-            for row in result.fetchall()
-        ]
+        try:
+            result = connection.execute(
+                sqlalchemy.text("""
+                SELECT hero.id, hero.name, hero.level, hero.power
+                FROM hero
+                JOIN guild ON hero.guild_id = guild.id
+                JOIN dungeon ON guild.world_id = dungeon.world_id AND dungeon.id = hero.dungeon_id
+                WHERE dungeon.id = :dungeon_id and hero.health > 0
+                """
+            ), {"dungeon_id": dungeon_id})
+            heroes = [
+                {"id": row.id, "name": row.name, "level": row.level, "power": row.power} 
+                for row in result.fetchall()
+            ]
+        except sqlalchemy.exc.IntegrityError as http:
+            raise HTTPException(status_code=404, detail="Unable to find heros in the dungeon")
     return heroes
 
 # Attack Hero - /monster/attack_hero/{monster_id}/ (POST)
