@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from src.api import auth
 import sqlalchemy
 from src import database as db
+from sqlalchemy.exc import IntegrityError
 
 router = APIRouter(
     prefix="/world",
@@ -117,21 +118,24 @@ def create_hero(world_id: int, hero: Hero):
     VALUES (:name, :classType, :level, :age, :power, :health, :xp, :world_id);
     """)
     with db.engine.begin() as connection:
-        result = connection.execute(sql_to_execute, {
-            "name": hero.hero_name,
-            "classType": hero.classType,
-            "level": hero.level,
-            "age": hero.age,
-            "power": hero.power,
-            "health": hero.health,
-            "xp": hero.xp,
-            "world_id": world_id
-        })
+        try:
+            result = connection.execute(sql_to_execute, {
+                "name": hero.hero_name,
+                "classType": hero.classType,
+                "level": hero.level,
+                "age": hero.age,
+                "power": hero.power,
+                "health": hero.health,
+                "xp": hero.xp,
+                "world_id": world_id
+            })
 
-        if result.rowcount > 0:
-            return {"success": True}
-        else:
-            return {"success": False, "message": "Hero not created"}
+            if result.rowcount > 0:
+                return SuccessResponse(success=True, message=f"Hero id {result.fetchone().id} created successfully")
+            else:
+                raise HTTPException(status_code = 400, detail = "Failed to create hero")
+        except IntegrityError:
+            raise HTTPException(status_code=400, detail="Hero name must be unique within specified world")
 
 @router.post("/age_hero/{hero_id}", response_model=SuccessResponse)
 def age_hero(hero_id: int):
