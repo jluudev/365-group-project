@@ -111,12 +111,12 @@ def create_dungeon(world_id: int, dungeon: Dungeon):
                 return {"success": True, "message": "dungeon %d created" % result.fetchone().id}
             else:
                 return {"success": False, "message": "World %d at max dungeon capacity" % world_id}
-        except sqlalchemy.exc.IntegrityError as http:
+        except sqlalchemy.exc.IntegrityError:
             return {"success": False, "message": "Dungeon name must be unique within specified world %d" % world_id}
 
 # Create Monster - /dungeon/create_monster/{dungeon_id} (POST)
 @router.post("/create_monster/{dungeon_id}")
-def create_monster(dungeon_id: int, monsters: Monster):
+def create_monster(dungeon_id: int, monster: Monster):
     '''
     Creates a monster within the specified dungeon_id\n
     Takes: dungeon_id (int), Monster (type, health, power, level)\n
@@ -139,22 +139,22 @@ def create_monster(dungeon_id: int, monsters: Monster):
     FROM monster_count, capacity_check
     WHERE monster_count.current_monster_count < capacity_check.monster_capacity;
     """
-    if monsters.health < 0:
+    if monster.health < 0:
         raise HTTPException(status_code = 400, detail = "Invalid Monster Health")
     if dungeon_id < 0:
         raise HTTPException(status_code = 400, detail = "Invalid Dungeon Id")
-    if monsters.power < 0:
+    if monster.power < 0:
         raise HTTPException(status_code = 400, detail = "Invalid Monster Power")
-    if monsters.level < 0:
+    if monster.level < 0:
         raise HTTPException(status_code = 400, detail = "Invalid Monster Level")
 
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text(sql_to_execute), {
-            "type": monsters.type,
-            "health": monsters.health,
+            "type": monster.type,
+            "health": monster.health,
             "dungeon_id": dungeon_id,
-            "power": monsters.power,
-            "level": monsters.level
+            "power": monster.power,
+            "level": monster.level
         })
         if result.rowcount > 0:
             return {"success": True}
@@ -187,7 +187,7 @@ def collect_bounty(guild_id: int, dungeon_id: int):
         result = connection.execute(sql_to_execute, {"dungeon_id": dungeon_id, "guild_id": guild_id})
         if result.rowcount > 0:
             # Return the amount of gold collected
-            return {"gold": result.fetchone()[0]}
+            return {"success": True, "message": "collected %d gold" % result.fetchone()[0]}
         else:
             return {"success": False, "message": "Failed to collect bounty"}
 

@@ -202,12 +202,15 @@ def check_health(hero_id: int):
     Returns: int
     '''
     with db.engine.begin() as connection:
-        health = connection.execute(sqlalchemy.text
-        ("""
-        SELECT health
-        FROM hero
-        WHERE id = :hero_id
-        """), [{"hero_id": hero_id}]).scalar_one()
+        try:
+            health = connection.execute(sqlalchemy.text
+            ("""
+            SELECT health
+            FROM hero
+            WHERE id = :hero_id
+            """), [{"hero_id": hero_id}]).scalar_one()
+        except sqlalchemy.exc.IntegrityError:
+            raise HTTPException(status_code=404, detail="Hero %d does not exist" % hero_id)
     return {
         "health": health
     }

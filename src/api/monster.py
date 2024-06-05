@@ -40,8 +40,8 @@ def find_heroes(dungeon_id: int):
                 {"id": row.id, "name": row.name, "level": row.level, "power": row.power} 
                 for row in result.fetchall()
             ]
-        except sqlalchemy.exc.IntegrityError as http:
-            raise HTTPException(status_code=404, detail="Unable to find heros in the dungeon")
+        except sqlalchemy.exc.IntegrityError:
+            raise HTTPException(status_code=404, detail="Dungeon %d does not exist" % dungeon_id)
     return heroes
 
 # Attack Hero - /monster/attack_hero/{monster_id}/ (POST)

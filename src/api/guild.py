@@ -82,12 +82,12 @@ def create_guild(world_id: int, guild: Guild):
                 return {"success": True, "message": "guild %d created" % result.fetchone().id}
             else:
                 return {"success": False, "message": "World %d at max guild capacity" % world_id}
-        except sqlalchemy.exc.IntegrityError as http:
+        except sqlalchemy.exc.IntegrityError:
             return {"success": False, "message": "Guild name must be unique within specified world %d" % world_id}
 
 # Recruit Hero - /guild/recruit_hero/{guild_id} (POST)
 @router.post("/recruit_hero/{guild_id}")
-def recruit_hero(guild_id: int, hero: Hero, message: str):
+def recruit_hero(guild_id: int, message: str, hero: Hero):
     '''
     Sends out a recruitment request to a hero from a specified guild_id\n
     Takes: guild_id (int), Hero (hero_name)\n
@@ -139,13 +139,13 @@ def available_heroes(guild_id: int):
     with db.engine.begin() as connection:
         result = connection.execute(
             sqlalchemy.text("""
-            SELECT name, power, health, level
+            SELECT name, power, health, level, age
             FROM hero
             WHERE guild_id = :guild_id AND dungeon_id IS NULL
             """), {"guild_id": guild_id}
         )
         heroes = [
-            {"hero_name": row.name, "power": row.power, "health": row.health, "level": row.level} 
+            {"hero_name": row.name, "power": row.power, "health": row.health, "level": row.level, "age": row.age} 
             for row in result.fetchall()
         ]
     return heroes
