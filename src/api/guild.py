@@ -61,6 +61,7 @@ def create_guild(world_id: int, guild: Guild):
     SELECT :name, :player_capacity, :gold, :world_id
     FROM guild_count, capacity_check
     WHERE guild_count.current_guild_count < capacity_check.guild_capacity
+    RETURNING id
     """
     if world_id < 0:
         raise HTTPException(status_code = 400, detail = "Invalid World Id")
@@ -78,7 +79,7 @@ def create_guild(world_id: int, guild: Guild):
                 "world_id": world_id
             })
             if result.rowcount > 0:
-                return {"success": True}
+                return {"success": True, "message": "guild %d created" % result.fetchone().id}
             else:
                 return {"success": False, "message": "World at max guild capacity"}
         except sqlalchemy.exc.IntegrityError as http:
