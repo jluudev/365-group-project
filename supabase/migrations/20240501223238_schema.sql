@@ -68,7 +68,7 @@ CREATE TABLE recruitment (
 -- Table for Monster/Hero targeting
 CREATE TABLE targeting (
     id SERIAL PRIMARY KEY,
-    hero_id INT REFERENCES hero(id),
+    hero_id INT REFERENCES hero(id) ON DELETE CASCADE,
     monster_id INT REFERENCES monster(id),
     damage INT NOT NULL DEFAULT 0,
     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
