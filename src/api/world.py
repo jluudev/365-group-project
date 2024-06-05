@@ -115,7 +115,8 @@ def create_hero(world_id: int, hero: Hero):
 
     sql_to_execute = sqlalchemy.text("""
     INSERT INTO hero (name, class, level, age, power, health, xp, world_id)
-    VALUES (:name, :classType, :level, :age, :power, :health, :xp, :world_id);
+    VALUES (:name, :classType, :level, :age, :power, :health, :xp, :world_id)
+    RETURNING id;
     """)
     with db.engine.begin() as connection:
         try:
